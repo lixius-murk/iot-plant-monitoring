@@ -1,8 +1,12 @@
 package com.example.plantcare.service;
 
-import com.example.plantcare.model.*;
-import com.example.plantcare.repo.*;
-import lombok.RequiredArgsConstructor;
+import com.example.plantcare.model.Dto;
+import com.example.plantcare.model.Event;
+import com.example.plantcare.model.Plant;
+import com.example.plantcare.model.Telemetry;
+import com.example.plantcare.repo.EventRepo;
+import com.example.plantcare.repo.PlantRepo;
+import com.example.plantcare.repo.TelemetryRepo;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -10,14 +14,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PlantService {
 
     private final PlantRepo plantRepo;
     private final TelemetryRepo telemetryRepo;
     private final EventRepo eventRepo;
 
-    // CRUD
+    public PlantService(PlantRepo plantRepo, TelemetryRepo telemetryRepo, EventRepo eventRepo) {
+        this.plantRepo = plantRepo;
+        this.telemetryRepo = telemetryRepo;
+        this.eventRepo = eventRepo;
+    }
+
     public List<Plant> getAllPlants() {
         return plantRepo.findAll();
     }
@@ -32,7 +40,6 @@ public class PlantService {
         plant.setSpecies(request.getSpeciesId() == 1 ? "Монстера" :
                 request.getSpeciesId() == 2 ? "Фикус" : "Кактус");
 
-        // Default thresholds
         plant.setTempMin(BigDecimal.valueOf(18.0));
         plant.setTempMax(BigDecimal.valueOf(28.0));
         plant.setHumidityMin(40);
@@ -50,7 +57,6 @@ public class PlantService {
         plantRepo.save(plant);
     }
 
-    // Telemetry
     public void saveTelemetry(Telemetry telemetry) {
         telemetryRepo.save(telemetry);
         checkThresholdsAndAct(telemetry);
@@ -70,12 +76,10 @@ public class PlantService {
                 }).orElse(null);
     }
 
-    // Логика принятия решений
     private void checkThresholdsAndAct(Telemetry telemetry) {
         Plant plant = getPlant(telemetry.getPlantId());
         boolean needAction = false;
 
-        // Проверка влажности почвы
         if (telemetry.getSoilMoisture() != null &&
                 telemetry.getSoilMoisture() < plant.getEffectiveSoilMoistureMin()) {
 
@@ -85,11 +89,9 @@ public class PlantService {
             event.setTrigger("AUTO");
             event.setAction("Включен полив на 5 секунд");
             eventRepo.save(event);
-
             needAction = true;
         }
 
-        // Проверка температуры
         if (telemetry.getTemperature() != null &&
                 telemetry.getTemperature().compareTo(plant.getEffectiveTempMin()) < 0) {
 
@@ -99,11 +101,9 @@ public class PlantService {
             event.setTrigger("AUTO");
             event.setAction("Включен обогрев");
             eventRepo.save(event);
-
             needAction = true;
         }
 
-        // Проверка освещения
         if (telemetry.getLightLux() != null &&
                 telemetry.getLightLux() < plant.getEffectiveLightMin()) {
 
@@ -113,11 +113,9 @@ public class PlantService {
             event.setTrigger("AUTO");
             event.setAction("Открыть шторы/включить лампу");
             eventRepo.save(event);
-
             needAction = true;
         }
 
-        // Обновляем состояние растения
         plant.setState(needAction ? 1 : 0);
         plantRepo.save(plant);
     }

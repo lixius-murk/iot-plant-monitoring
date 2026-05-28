@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PlantCare IoT</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #4CAF50; color: white; padding: 5px; border-radius: 3px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; }
+    </style>
+</head>
+<body>
+<h1>PlantCare IoT System</h1>
+
+<div class="card">
+    <h2>Создать растение</h2>
+    <input type="text" id="plantName" placeholder="Название">
+    <button onclick="createPlant()">Создать</button>
+    <div id="createResult"></div>
+</div>
+
+<div class="card">
+    <h2>Растения</h2>
+    <button onclick="loadPlants()">Загрузить</button>
+    <div id="plants"></div>
+</div>
+
+<div class="card">
+    <h2>Управление</h2>
+    <input type="number" id="plantId" placeholder="ID растения">
+    <button onclick="simulate()">Симуляция данных</button>
+    <button onclick="water()">Полить</button>
+    <div id="telemetry"></div>
+</div>
+
+<script>
+    async function createPlant() {
+        const name = document.getElementById('plantName').value;
+        const response = await fetch('/api/plants', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name: name, speciesId: 1})
+        });
+        const result = await response.json();
+        document.getElementById('createResult').innerHTML =
+            `<div class="success">✅ Растение создано! ID: ${result.id}</div>`;
+        loadPlants();
+    }
+
+    async function loadPlants() {
+        const response = await fetch('/api/plants');
+        const plants = await response.json();
+        let html = '<ul>';
+        plants.forEach(p => {
+            html += `<li> ${p.name} (ID: ${p.id}) - Состояние: ${p.state === 0 ? '✅ Здорово' : '! Требует внимания'}</li>`;
+        });
+        html += '</ul>';
+        document.getElementById('plants').innerHTML = html;
+    }
+
+    async function simulate() {
+        const id = document.getElementById('plantId').value;
+        await fetch(`/api/simulate/${id}`, {method: 'POST'});
+        setTimeout(() => loadTelemetry(), 500);
+    }
+
+    async function water() {
+        const id = document.getElementById('plantId').value;
+        await fetch(`/api/plants/${id}/water`, {method: 'POST'});
+        alert('💧 Полив выполнен!');
+        setTimeout(() => loadTelemetry(), 1000);
+    }
+
+    async function loadTelemetry() {
+        const id = document.getElementById('plantId').value;
+        const response = await fetch(`/api/plants/${id}/telemetry/latest`);
+        const data = await response.json();
+        if (data) {
+            document.getElementById('telemetry').innerHTML = `
+                    <div class="card">
+                        <h3>Последние показания</h3>
+                        <p>Температура: ${data.temp || '—'} °C</p>
+                        <p>Влажность воздуха: ${data.humidity || '—'} %</p>
+                        <p> Влажность почвы: ${data.soilMoisture || '—'} %</p>
+                        <p> Освещенность: ${data.light || '—'} lux</p>
+                        <p> Время: ${data.time || '—'}</p>
+                    </div>
+                `;
+        }
+    }
+
+    loadPlants();
+</script>
+</body>
+</html>

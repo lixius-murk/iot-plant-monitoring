@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface TelemetryRepo extends JpaRepository<Telemetry, Long> {
-
     Optional<Telemetry> findFirstByPlantIdOrderByTimestampDesc(Long plantId);
 }
