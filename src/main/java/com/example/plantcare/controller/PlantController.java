@@ -1,7 +1,7 @@
 package com.example.plantcare.controller;
 
 import com.example.plantcare.model.Dto;
-import com.example.plantcare.model.Plant;
+import com.example.plantcare.model.entity.Plant;
 import com.example.plantcare.service.DataSimulator;
 import com.example.plantcare.service.PlantService;
 import org.springframework.http.ResponseEntity;
@@ -21,53 +21,36 @@ public class PlantController {
         this.simulator = simulator;
     }
 
-    @GetMapping("/plants")
-    public ResponseEntity<List<Plant>> getAllPlants() {
-        return ResponseEntity.ok(plantService.getAllPlants());
+    @GetMapping
+    public ResponseEntity<List<Dto.PlantResponse>> getAllPlants() {
+        return ResponseEntity.ok(
+                plantService.getAllActive().stream().map(Dto.PlantResponse::from).toList()
+        );
     }
 
-    @GetMapping("/plants/{id}")
-    public ResponseEntity<Plant> getPlant(@PathVariable Long id) {
-        return ResponseEntity.ok(plantService.getPlant(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<Dto.PlantResponse> getPlant(@PathVariable Long id) {
+        return plantService.findById(id)
+                .map(Dto.PlantResponse::from)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/plants")
-    public ResponseEntity<Plant> createPlant(@RequestBody Dto.PlantRequest request) {
-        return ResponseEntity.ok(plantService.createPlant(request));
+    @PostMapping
+    public ResponseEntity<Dto.PlantResponse> createPlant(@RequestBody Dto.PlantRequest req) {
+        return ResponseEntity.ok(Dto.PlantResponse.from(plantService.create(req)));
     }
 
-    @PutMapping("/plants/{id}/settings")
-    public ResponseEntity<Void> updateSettings(@PathVariable Long id,
-                                               @RequestBody Dto.Settings settings) {
-        plantService.updateSettings(id, settings);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{id}/settings")
+    public ResponseEntity<Dto.PlantResponse> updateSettings(
+            @PathVariable Long id, @RequestBody Dto.Settings settings) {
+        return ResponseEntity.ok(Dto.PlantResponse.from(plantService.updateSettings(id, settings)));
     }
 
-    @GetMapping("/plants/{id}/telemetry/latest")
+    @GetMapping("/{id}/telemetry/latest")
     public ResponseEntity<Dto.TelemetryData> getLatestTelemetry(@PathVariable Long id) {
-        return ResponseEntity.ok(plantService.getLatestTelemetry(id));
+        return telemetryService.getLatestByPlant(id)
+                .map(Dto.TelemetryData::from)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-
-    @GetMapping("/plants/{id}/events")
-    public ResponseEntity<List<Dto.EventData>> getEvents(@PathVariable Long id) {
-        return ResponseEntity.ok(plantService.getRecentEvents(id));
-    }
-
-    @PostMapping("/plants/{id}/water")
-    public ResponseEntity<Dto.Command> manualWater(@PathVariable Long id) {
-        simulator.applyWatering(id);
-
-        Dto.Command command = new Dto.Command();
-        command.setPlantId(id);
-        command.setType("WATER");
-        command.setDuration(5);
-
-        return ResponseEntity.ok(command);
-    }
-
-    @PostMapping("/simulate/{id}")
-    public ResponseEntity<Void> simulate(@PathVariable Long id) {
-        simulator.simulateAndSend(id);
-        return ResponseEntity.ok().build();
-    }
-}

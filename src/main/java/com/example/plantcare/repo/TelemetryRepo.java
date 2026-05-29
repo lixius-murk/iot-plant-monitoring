@@ -1,6 +1,6 @@
 package com.example.plantcare.repo;
 
-import com.example.plantcare.model.Telemetry;
+import com.example.plantcare.model.entity.Telemetry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

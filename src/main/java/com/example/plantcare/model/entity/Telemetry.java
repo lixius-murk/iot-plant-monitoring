@@ -1,4 +1,4 @@
-package com.example.plantcare.model;
+package com.example.plantcare.model.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -10,22 +10,47 @@ public class Telemetry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_telemetry")
     private Long id;
 
-    private Long plantId;
+    @ManyToOne
+    @JoinColumn(name = "id_plant")
+    private PlantInstance plant;
+
+    @ManyToOne
+    @JoinColumn(name = "id_sensor")
+    private Sensor sensor;
+
+    @Column(name = "temperature")
     private BigDecimal temperature;
+
+    @Column(name = "humidity_air")
     private Integer humidityAir;
+
+    @Column(name = "soil_moisture")
     private Integer soilMoisture;
+
+    @Column(name = "light_lux")
     private Integer lightLux;
+
+    @Column(name = "ec")
     private BigDecimal ec;
+
+    @Column(name = "timestamp")
     private LocalDateTime timestamp = LocalDateTime.now();
 
-    // Геттеры и сеттеры
+
+    @Column(name = "is_valid")
+    private Boolean isValid = true;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getPlantId() { return plantId; }
-    public void setPlantId(Long plantId) { this.plantId = plantId; }
+    public PlantInstance getPlant() { return plant; }
+    public void setPlant(PlantInstance plant) { this.plant = plant; }
+
+    public Sensor getSensor() { return sensor; }
+    public void setSensor(Sensor sensor) { this.sensor = sensor; }
 
     public BigDecimal getTemperature() { return temperature; }
     public void setTemperature(BigDecimal temperature) { this.temperature = temperature; }
@@ -44,4 +69,7 @@ public class Telemetry {
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public Boolean getIsValid() { return isValid; }
+    public void setIsValid(Boolean isValid) { this.isValid = isValid; }
 }

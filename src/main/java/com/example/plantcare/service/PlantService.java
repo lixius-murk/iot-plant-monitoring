@@ -1,134 +1,77 @@
 package com.example.plantcare.service;
 
 import com.example.plantcare.model.Dto;
-import com.example.plantcare.model.Event;
-import com.example.plantcare.model.Plant;
-import com.example.plantcare.model.Telemetry;
-import com.example.plantcare.repo.EventRepo;
-import com.example.plantcare.repo.PlantRepo;
-import com.example.plantcare.repo.TelemetryRepo;
+import com.example.plantcare.model.entity.Plant;
+import com.example.plantcare.model.entity.PlantInstance;
+import com.example.plantcare.repo.PlantInstanceRepository;
+import com.example.plantcare.repo.PlantSpeciesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 public class PlantService {
 
-    private final PlantRepo plantRepo;
-    private final TelemetryRepo telemetryRepo;
-    private final EventRepo eventRepo;
+    @Autowired
+    private PlantInstanceRepository plantRepo;
 
-    public PlantService(PlantRepo plantRepo, TelemetryRepo telemetryRepo, EventRepo eventRepo) {
-        this.plantRepo = plantRepo;
-        this.telemetryRepo = telemetryRepo;
-        this.eventRepo = eventRepo;
+    @Autowired
+    private PlantSpeciesRepository speciesRepo;
+
+    public List<PlantInstance> getAllActive() {
+        return plantRepo.findByIsActiveTrue();
     }
 
-    public List<Plant> getAllPlants() {
-        return plantRepo.findAll();
+    public Optional<PlantInstance> findById(Long id) {
+        return plantRepo.findById(id);
     }
 
-    public Plant getPlant(Long id) {
-        return plantRepo.findById(id).orElseThrow();
+    public PlantInstance create(Dto.PlantRequest req) {
+        Plant species = speciesRepo.findById(req.getSpeciesId())
+                .orElseThrow(() -> new IllegalArgumentException("Species not found: " + req.getSpeciesId()));
+
+        PlantInstance p = new PlantInstance();
+        p.setName(req.getName());
+        p.setSpecies(species);
+        p.setCurrentHeightCm(req.getHeightCm());
+        p.setCurrentPotSizeCm(req.getPotSizeCm());
+        return plantRepo.save(p);
     }
 
-    public Plant createPlant(Dto.PlantRequest request) {
-        Plant plant = new Plant();
-        plant.setName(request.getName());
-        plant.setSpecies(request.getSpeciesId() == 1 ? "Монстера" :
-                request.getSpeciesId() == 2 ? "Фикус" : "Кактус");
+    public PlantInstance updateSettings(Long id, Dto.Settings s) {
+        PlantInstance p = plantRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Plant not found: " + id));
 
-        plant.setTempMin(BigDecimal.valueOf(18.0));
-        plant.setTempMax(BigDecimal.valueOf(28.0));
-        plant.setHumidityMin(40);
-        plant.setSoilMoistureMin(40);
-        plant.setLightMin(5000);
-
-        return plantRepo.save(plant);
+        p.setCustomTempMin(s.getTempMin());
+        p.setCustomTempMax(s.getTempMax());
+        p.setCustomHumMin(s.getHumMin());
+        p.setCustomHumMax(s.getHumMax());
+        p.setCustomSoilMoistureMin(s.getSoilMoistureMin());
+        p.setCustomSoilMoistureMax(s.getSoilMoistureMax());
+        p.setCustomLightMin(s.getLightMin());
+        p.setUpdatedAt(LocalDateTime.now());
+        return plantRepo.save(p);
     }
 
-    public void updateSettings(Long id, Dto.Settings settings) {
-        Plant plant = getPlant(id);
-        plant.setCustomTempMin(settings.getTempMin());
-        plant.setCustomSoilMoistureMin(settings.getSoilMoistureMin());
-        plant.setCustomLightMin(settings.getLightMin());
-        plantRepo.save(plant);
+    public void delete(Long id) {
+        plantRepo.findById(id).ifPresent(p -> {
+            p.setIsActive(false);
+            plantRepo.save(p);
+        });
     }
 
-    public void saveTelemetry(Telemetry telemetry) {
-        telemetryRepo.save(telemetry);
-        checkThresholdsAndAct(telemetry);
+    public long countActive() {
+        return plantRepo.countByIsActiveTrue();
     }
 
-    public Dto.TelemetryData getLatestTelemetry(Long plantId) {
-        return telemetryRepo.findFirstByPlantIdOrderByTimestampDesc(plantId)
-                .map(t -> {
-                    Dto.TelemetryData dto = new Dto.TelemetryData();
-                    dto.setPlantId(plantId);
-                    dto.setTemp(t.getTemperature());
-                    dto.setHumidity(t.getHumidityAir());
-                    dto.setSoilMoisture(t.getSoilMoisture());
-                    dto.setLight(t.getLightLux());
-                    dto.setTime(t.getTimestamp());
-                    return dto;
-                }).orElse(null);
+    public long countByState(Integer state) {
+        return plantRepo.countByCurrentState(state);
     }
 
-    private void checkThresholdsAndAct(Telemetry telemetry) {
-        Plant plant = getPlant(telemetry.getPlantId());
-        boolean needAction = false;
-
-        if (telemetry.getSoilMoisture() != null &&
-                telemetry.getSoilMoisture() < plant.getEffectiveSoilMoistureMin()) {
-
-            Event event = new Event();
-            event.setPlantId(plant.getId());
-            event.setType("WATERING");
-            event.setTrigger("AUTO");
-            event.setAction("Включен полив на 5 секунд");
-            eventRepo.save(event);
-            needAction = true;
-        }
-
-        if (telemetry.getTemperature() != null &&
-                telemetry.getTemperature().compareTo(plant.getEffectiveTempMin()) < 0) {
-
-            Event event = new Event();
-            event.setPlantId(plant.getId());
-            event.setType("HEATING");
-            event.setTrigger("AUTO");
-            event.setAction("Включен обогрев");
-            eventRepo.save(event);
-            needAction = true;
-        }
-
-        if (telemetry.getLightLux() != null &&
-                telemetry.getLightLux() < plant.getEffectiveLightMin()) {
-
-            Event event = new Event();
-            event.setPlantId(plant.getId());
-            event.setType("LIGHT");
-            event.setTrigger("AUTO");
-            event.setAction("Открыть шторы/включить лампу");
-            eventRepo.save(event);
-            needAction = true;
-        }
-
-        plant.setState(needAction ? 1 : 0);
-        plantRepo.save(plant);
-    }
-
-    public List<Dto.EventData> getRecentEvents(Long plantId) {
-        return eventRepo.findTop20ByPlantIdOrderByTimestampDesc(plantId)
-                .stream()
-                .map(e -> {
-                    Dto.EventData dto = new Dto.EventData();
-                    dto.setType(e.getType());
-                    dto.setAction(e.getAction());
-                    dto.setTime(e.getTimestamp());
-                    return dto;
-                }).collect(Collectors.toList());
+    public long countByHealthStatus(String status) {
+        return plantRepo.findByHealthStatus(status).size();
     }
 }
