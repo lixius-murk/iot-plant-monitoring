@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plant Care Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f7f0; }
+        .plant-card { border-left: 5px solid #4CAF50; transition: box-shadow .2s; }
+        .plant-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+        .plant-card.needs-attention { border-left-color: #FF9800; }
+        .sensor-badge { font-size: .75rem; }
+        .stat-card { border-radius: 12px; }
+        #events-list { max-height: 300px; overflow-y: auto; }
+        .event-item { font-size: .85rem; border-bottom: 1px solid #eee; padding: 6px 0; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark" style="background:#2E7D32">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold">🌿 Plant Care Monitor</span>
+        <span class="text-white-50 small" id="last-update"></span>
+    </div>
+</nav>
+
+<div class="container-fluid py-3">
+
+    <!-- Summary row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center py-3">
+                <div class="fs-2 fw-bold text-success" id="total-plants">-</div>
+                <div class="text-muted small">Total Plants</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center py-3">
+                <div class="fs-2 fw-bold text-success" id="healthy-plants">-</div>
+                <div class="text-muted small">Healthy</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center py-3">
+                <div class="fs-2 fw-bold text-warning" id="attention-plants">-</div>
+                <div class="text-muted small">Need Attention</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-center py-3">
+                <div class="fs-2 fw-bold text-danger" id="pending-recs">-</div>
+                <div class="text-muted small">Open Alerts</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Plant cards -->
+        <div class="col-md-8">
+            <h5 class="mb-3">Plants</h5>
+            <div id="plant-cards" class="row g-3"></div>
+        </div>
+
+        <!-- Events feed -->
+        <div class="col-md-4">
+            <h5 class="mb-3">Recent Events</h5>
+            <div class="card p-3">
+                <div id="events-list"><p class="text-muted small">Loading...</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Plant detail modal -->
+<div class="modal fade" id="plantModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const modal = new bootstrap.Modal(document.getElementById('plantModal'));
+
+    async function loadSummary() {
+        const res = await fetch('/api/dashboard/summary');
+        const d = await res.json();
+        document.getElementById('total-plants').textContent = d.totalPlants;
+        document.getElementById('healthy-plants').textContent = d.healthyPlants;
+        document.getElementById('attention-plants').textContent = d.plantsNeedingAttention;
+        document.getElementById('pending-recs').textContent = d.pendingRecommendations;
+
+        const el = document.getElementById('events-list');
+        if (d.recentEvents && d.recentEvents.length) {
+            el.innerHTML = d.recentEvents.map(e => `
+      <div class="event-item">
+        <span class="badge bg-secondary sensor-badge">${e.eventType}</span>
+        <span class="ms-2">${e.actionTaken || ''}</span>
+        <div class="text-muted" style="font-size:.75rem">${formatTime(e.timestamp)}</div>
+      </div>`).join('');
+        } else {
+            el.innerHTML = '<p class="text-muted small">No events yet</p>';
+        }
+
+        document.getElementById('last-update').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    }
+
+    async function loadPlants() {
+        const res = await fetch('/api/plants');
+        const plants = await res.json();
+        const container = document.getElementById('plant-cards');
+        container.innerHTML = '';
+
+        for (const plant of plants) {
+            let telemetry = null;
+            try {
+                const tr = await fetch(`/api/plants/${plant.id}/telemetry/latest`);
+                if (tr.ok) telemetry = await tr.json();
+            } catch(e) {}
+
+            const needsAttention = plant.state === 1;
+            const col = document.createElement('div');
+            col.className = 'col-sm-6 col-lg-4';
+            col.innerHTML = `
+      <div class="card plant-card p-3 ${needsAttention ? 'needs-attention' : ''}"
+           style="cursor:pointer" onclick="openPlant(${plant.id}, '${plant.name}')">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="fw-bold">${plant.name}</div>
+            <div class="text-muted small">${plant.species || 'Unknown'}</div>
+          </div>
+          <span class="badge ${needsAttention ? 'bg-warning text-dark' : 'bg-success'}">${plant.health || 'HEALTHY'}</span>
+        </div>
+        ${telemetry ? `
+        <div class="row g-1 text-center">
+          ${telemetry.temp != null ? `<div class="col-6"><div class="bg-light rounded p-1"><small class="text-muted d-block">Temp</small><strong>${telemetry.temp}°C</strong></div></div>` : ''}
+          ${telemetry.humidity != null ? `<div class="col-6"><div class="bg-light rounded p-1"><small class="text-muted d-block">Humidity</small><strong>${telemetry.humidity}%</strong></div></div>` : ''}
+          ${telemetry.soilMoisture != null ? `<div class="col-6"><div class="bg-light rounded p-1"><small class="text-muted d-block">Soil</small><strong>${telemetry.soilMoisture}%</strong></div></div>` : ''}
+          ${telemetry.light != null ? `<div class="col-6"><div class="bg-light rounded p-1"><small class="text-muted d-block">Light</small><strong>${telemetry.light} lux</strong></div></div>` : ''}
+        </div>` : '<div class="text-muted small text-center">Waiting for data...</div>'}
+        <div class="mt-2 text-muted" style="font-size:.72rem">
+          ${plant.heightCm ? `Height: ${plant.heightCm} cm &nbsp;|&nbsp;` : ''}
+          ${plant.lastWateredAt ? 'Watered: ' + formatTime(plant.lastWateredAt) : ''}
+        </div>
+      </div>`;
+            container.appendChild(col);
+        }
+    }
+
+    async function openPlant(id, name) {
+        document.getElementById('modalTitle').textContent = name;
+        document.getElementById('modalBody').innerHTML = '<p>Loading...</p>';
+        modal.show();
+
+        const [recs] = await Promise.all([
+            fetch(`/api/plants/${id}/recommendations`).then(r => r.json())
+        ]);
+
+        const recHtml = recs.length
+            ? recs.map(r => `
+        <div class="alert alert-${r.severity === 'WARNING' ? 'warning' : r.severity === 'CRITICAL' ? 'danger' : 'info'} py-2 mb-2">
+          <strong>${r.type}</strong>: ${r.message}
+          <div class="text-muted" style="font-size:.75rem">${formatTime(r.createdAt)}
+            ${!r.resolved ? `<button class="btn btn-sm btn-outline-secondary ms-2" onclick="resolveRec(${id},${r.id})">Resolve</button>` : '<span class="ms-2 badge bg-secondary">Resolved</span>'}
+          </div>
+        </div>`).join('')
+            : '<p class="text-muted">No recommendations</p>';
+
+        document.getElementById('modalBody').innerHTML = `<h6>Recommendations</h6>${recHtml}`;
+    }
+
+    async function resolveRec(plantId, recId) {
+        await fetch(`/api/plants/${plantId}/recommendations/${recId}/resolve`, { method: 'POST' });
+        openPlant(plantId, document.getElementById('modalTitle').textContent);
+    }
+
+    function formatTime(ts) {
+        if (!ts) return '';
+        return new Date(ts).toLocaleString();
+    }
+
+    async function refresh() {
+        await Promise.all([loadSummary(), loadPlants()]);
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
+</script>
+</body>
+</html>

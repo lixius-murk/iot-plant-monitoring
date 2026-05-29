@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "sensors")
 public class Sensor {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_sensor")
@@ -36,7 +36,6 @@ public class Sensor {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Вспомогательные методы
     public List<PlantInstance> getPlants() {
         return plantSensors.stream()
                 .filter(PlantSensor::getIsActive)
@@ -44,28 +43,20 @@ public class Sensor {
                 .collect(Collectors.toList());
     }
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public SensorType getSensorType() { return sensorType; }
     public void setSensorType(SensorType sensorType) { this.sensorType = sensorType; }
-
     public List<PlantSensor> getPlantSensors() { return plantSensors; }
     public void setPlantSensors(List<PlantSensor> plantSensors) { this.plantSensors = plantSensors; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
-
     public Integer getPinNumber() { return pinNumber; }
     public void setPinNumber(Integer pinNumber) { this.pinNumber = pinNumber; }
-
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

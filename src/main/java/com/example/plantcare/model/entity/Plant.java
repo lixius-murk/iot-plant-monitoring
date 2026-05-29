@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "plant_species")
 public class Plant {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_species")
@@ -31,6 +30,9 @@ public class Plant {
     @Column(name = "soil_moisture_min", nullable = false)
     private Integer soilMoistureMin;
 
+    @Column(name = "soil_moisture_max")
+    private Integer soilMoistureMax;
+
     @Column(name = "ec_target")
     private BigDecimal ecTarget;
 
@@ -49,46 +51,32 @@ public class Plant {
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
     public BigDecimal getTempMin() { return tempMin; }
     public void setTempMin(BigDecimal tempMin) { this.tempMin = tempMin; }
-
     public BigDecimal getTempMax() { return tempMax; }
     public void setTempMax(BigDecimal tempMax) { this.tempMax = tempMax; }
-
     public Integer getHumMin() { return humMin; }
     public void setHumMin(Integer humMin) { this.humMin = humMin; }
-
     public Integer getHumMax() { return humMax; }
     public void setHumMax(Integer humMax) { this.humMax = humMax; }
-
     public Integer getSoilMoistureMin() { return soilMoistureMin; }
     public void setSoilMoistureMin(Integer soilMoistureMin) { this.soilMoistureMin = soilMoistureMin; }
-
-    public Integer getSoilMoistureMax() { return soilMoistureMax; }
+    public Integer getSoilMoistureMax() { return soilMoistureMax != null ? soilMoistureMax : 80; }
     public void setSoilMoistureMax(Integer soilMoistureMax) { this.soilMoistureMax = soilMoistureMax; }
-
     public BigDecimal getEcTarget() { return ecTarget; }
     public void setEcTarget(BigDecimal ecTarget) { this.ecTarget = ecTarget; }
-
     public Integer getLightMin() { return lightMin; }
     public void setLightMin(Integer lightMin) { this.lightMin = lightMin; }
-
     public Integer getRecommendedPotSizeCm() { return recommendedPotSizeCm; }
     public void setRecommendedPotSizeCm(Integer recommendedPotSizeCm) { this.recommendedPotSizeCm = recommendedPotSizeCm; }
-
     public BigDecimal getGrowthRatePerDay() { return growthRatePerDay; }
     public void setGrowthRatePerDay(BigDecimal growthRatePerDay) { this.growthRatePerDay = growthRatePerDay; }
-
     public String getColorCode() { return colorCode; }
     public void setColorCode(String colorCode) { this.colorCode = colorCode; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

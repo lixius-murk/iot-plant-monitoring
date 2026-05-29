@@ -1,6 +1,7 @@
 package com.example.plantcare.model;
 
 import com.example.plantcare.model.entity.PlantInstance;
+import com.example.plantcare.model.entity.Recommendation;
 import com.example.plantcare.model.entity.Telemetry;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -119,17 +120,22 @@ public class Dto {
         private Boolean resolved;
         private LocalDateTime createdAt;
 
+        public static RecommendationData from(Recommendation r) {
+            RecommendationData dto = new RecommendationData();
+            dto.id = r.getId();
+            dto.type = r.getRecommendationType();
+            dto.message = r.getMessage();
+            dto.severity = r.getSeverity();
+            dto.resolved = r.getIsResolved();
+            dto.createdAt = r.getCreatedAt();
+            return dto;
+        }
+
         public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
         public String getType() { return type; }
-        public void setType(String type) { this.type = type; }
         public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
         public String getSeverity() { return severity; }
-        public void setSeverity(String severity) { this.severity = severity; }
         public Boolean getResolved() { return resolved; }
-        public void setResolved(Boolean resolved) { this.resolved = resolved; }
         public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     }
 }

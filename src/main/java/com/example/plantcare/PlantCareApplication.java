@@ -5,12 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
-//http://localhost:8080/api/plants
+//http://localhost:8080/Dashboard.html
 @SpringBootApplication
 @EnableScheduling
 public class PlantCareApplication {
     public static void main(String[] args) {
         SpringApplication.run(PlantCareApplication.class, args);
-        System.out.println("Сервер запущен!");
     }
 }

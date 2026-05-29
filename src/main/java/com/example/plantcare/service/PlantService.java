@@ -3,11 +3,10 @@ package com.example.plantcare.service;
 import com.example.plantcare.model.Dto;
 import com.example.plantcare.model.entity.Plant;
 import com.example.plantcare.model.entity.PlantInstance;
-import com.example.plantcare.repo.PlantInstanceRepository;
-import com.example.plantcare.repo.PlantSpeciesRepository;
+import com.example.plantcare.repo.PlantInstanceRepo;
+import com.example.plantcare.repo.PlantSpeciesRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +15,10 @@ import java.util.Optional;
 public class PlantService {
 
     @Autowired
-    private PlantInstanceRepository plantRepo;
+    private PlantInstanceRepo plantRepo;
 
     @Autowired
-    private PlantSpeciesRepository speciesRepo;
+    private PlantSpeciesRepo speciesRepo;
 
     public List<PlantInstance> getAllActive() {
         return plantRepo.findByIsActiveTrue();
@@ -32,7 +31,6 @@ public class PlantService {
     public PlantInstance create(Dto.PlantRequest req) {
         Plant species = speciesRepo.findById(req.getSpeciesId())
                 .orElseThrow(() -> new IllegalArgumentException("Species not found: " + req.getSpeciesId()));
-
         PlantInstance p = new PlantInstance();
         p.setName(req.getName());
         p.setSpecies(species);
@@ -44,7 +42,6 @@ public class PlantService {
     public PlantInstance updateSettings(Long id, Dto.Settings s) {
         PlantInstance p = plantRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Plant not found: " + id));
-
         p.setCustomTempMin(s.getTempMin());
         p.setCustomTempMax(s.getTempMax());
         p.setCustomHumMin(s.getHumMin());
@@ -53,6 +50,10 @@ public class PlantService {
         p.setCustomSoilMoistureMax(s.getSoilMoistureMax());
         p.setCustomLightMin(s.getLightMin());
         p.setUpdatedAt(LocalDateTime.now());
+        return plantRepo.save(p);
+    }
+
+    public PlantInstance save(PlantInstance p) {
         return plantRepo.save(p);
     }
 
