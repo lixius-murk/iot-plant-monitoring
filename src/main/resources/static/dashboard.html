@@ -79,15 +79,14 @@
         </div>
     </div>
 </div>
-<button id="add_btn"> Add new plant </button>
-
+</div>
+<button id="add_btn" class="btn btn-success" onclick="openAddPlant()">+ Add Plant</button>
 <div class="modal fade" id="addPlantModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header" style="background:#2E7D32; color:white">
                 <h5 class="modal-title">Add new plant</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
             <div class="modal-body">
 
@@ -189,7 +188,7 @@
         });
     }
     function resetAddForm() {
-        ['f-name','f-height','f-pot','f-tmin','f-tmax','f-hmin','f-hmax','f-smmin','f-smmax','f-lmin']
+        ['f-name','f-height','f-pot','f-tmin','f-tmax','f-hmin','f-hmax','f-smmin','f-lmin']
             .forEach(id => document.getElementById(id).value = '');
         document.getElementById('f-species').value = '';
         document.getElementById('species-hint').textContent = '';
@@ -273,6 +272,24 @@
     }
 
     //--------------------------
+
+    function onSpeciesChange() {
+        const id = parseInt(document.getElementById('f-species').value);
+        const s = speciesList.find(x => x.id === id);
+        const hint = document.getElementById('species-hint');
+        if (s) {
+            hint.textContent = `Temp ${s.tempMin}–${s.tempMax}°C · Humidity ${s.humMin}–${s.humMax}% · Soil ≥${s.soilMoistureMin}% · Light ≥${s.lightMin} lux`;
+        } else {
+            hint.textContent = '';
+        }
+    }
+
+    function toggleCustom() {
+        const el = document.getElementById('custom-thresholds');
+        const label = document.getElementById('custom-toggle-label');
+        const hidden = el.classList.toggle('d-none');
+        label.textContent = hidden ? 'Show' : 'Hide';
+    }
     async function loadSummary() {
         const res = await fetch('/api/dashboard/summary');
         const d = await res.json();
