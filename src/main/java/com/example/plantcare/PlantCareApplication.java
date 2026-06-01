@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 
-//http://localhost:8080/Dashboard.html
+//http://localhost:8080/dashboard.html
 @SpringBootApplication
 @EnableScheduling
 public class PlantCareApplication {

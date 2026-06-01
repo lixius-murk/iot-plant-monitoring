@@ -19,14 +19,13 @@
 <body>
 <nav class="navbar navbar-dark" style="background:#2E7D32">
     <div class="container-fluid">
-        <span class="navbar-brand fw-bold">🌿 Plant Care Monitor</span>
+        <span class="navbar-brand fw-bold">Plant Care Monitor</span>
         <span class="text-white-50 small" id="last-update"></span>
     </div>
 </nav>
 
 <div class="container-fluid py-3">
 
-    <!-- Summary row -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="card stat-card text-center py-3">
@@ -55,13 +54,11 @@
     </div>
 
     <div class="row g-3">
-        <!-- Plant cards -->
         <div class="col-md-8">
             <h5 class="mb-3">Plants</h5>
             <div id="plant-cards" class="row g-3"></div>
         </div>
 
-        <!-- Events feed -->
         <div class="col-md-4">
             <h5 class="mb-3">Recent Events</h5>
             <div class="card p-3">
@@ -71,7 +68,6 @@
     </div>
 </div>
 
-<!-- Plant detail modal -->
 <div class="modal fade" id="plantModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -83,11 +79,200 @@
         </div>
     </div>
 </div>
+<button id="add_btn"> Add new plant </button>
+
+<div class="modal fade" id="addPlantModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#2E7D32; color:white">
+                <h5 class="modal-title">Add new plant</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+            <div class="modal-body">
+
+                <div id="step-basic">
+                    <h6 class="text-muted mb-3">Basic Info</h6>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Plant Name <span class="text-danger">*</span></label>
+                        <input type="text" id="f-name" class="form-control" placeholder="e.g. Ficus #2">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Species <span class="text-danger">*</span></label>
+                        <select id="f-species" class="form-select" onchange="onSpeciesChange()">
+                            <option value="">Select species...</option>
+                        </select>
+                        <div class="species-hint" id="species-hint"></div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Height (cm)</label>
+                            <input type="number" id="f-height" class="form-control" placeholder="e.g. 30" min="0" step="0.1">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold">Pot Size (cm)</label>
+                            <input type="number" id="f-pot" class="form-control" placeholder="e.g. 15" min="0">
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">Custom Thresholds <span class="badge bg-secondary" style="font-size:.7rem">optional</span></h6>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleCustom()">
+                            <span id="custom-toggle-label">Show</span>
+                        </button>
+                    </div>
+
+                    <div id="custom-thresholds" class="d-none">
+                        <p class="text-muted small mb-2">Leave blank to use species defaults.</p>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small">Temp Min (°C)</label>
+                                <input type="number" id="f-tmin" class="form-control form-control-sm" step="0.1">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Temp Max (°C)</label>
+                                <input type="number" id="f-tmax" class="form-control form-control-sm" step="0.1">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Humidity Min (%)</label>
+                                <input type="number" id="f-hmin" class="form-control form-control-sm" min="0" max="100">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Humidity Max (%)</label>
+                                <input type="number" id="f-hmax" class="form-control form-control-sm" min="0" max="100">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small">Soil Moisture Min (%)</label>
+                                <input type="number" id="f-smmin" class="form-control form-control-sm" min="0" max="100">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small">Light Min (lux)</label>
+                                <input type="number" id="f-lmin" class="form-control form-control-sm" min="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="form-error" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="submitPlant()">
+                    <span id="submit-spinner" class="spinner-border spinner-border-sm me-1 d-none"></span>
+                    Add Plant
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const modal = new bootstrap.Modal(document.getElementById('plantModal'));
+    const addModal = new bootstrap.Modal(document.getElementById('addPlantModal'));
+    let speciesList = [];
 
+    async function openAddPlant() {
+        resetAddForm();
+        if (speciesList.length === 0) await loadSpecies();
+        addModal.show();
+    }
+
+    async function loadSpecies() {
+        const res = await fetch('/api/species');
+        speciesList = await res.json();
+        const sel = document.getElementById('f-species');
+        sel.innerHTML = '<option value="">Select species...</option>';
+        speciesList.forEach(s => {
+            sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        });
+    }
+    function resetAddForm() {
+        ['f-name','f-height','f-pot','f-tmin','f-tmax','f-hmin','f-hmax','f-smmin','f-smmax','f-lmin']
+            .forEach(id => document.getElementById(id).value = '');
+        document.getElementById('f-species').value = '';
+        document.getElementById('species-hint').textContent = '';
+        document.getElementById('form-error').classList.add('d-none');
+        document.getElementById('custom-thresholds').classList.add('d-none');
+        document.getElementById('custom-toggle-label').textContent = 'Show';
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('form-error');
+        el.textContent = msg;
+        el.classList.remove('d-none');
+    }
+
+    function setSubmitting(on) {
+        document.getElementById('submit-spinner').classList.toggle('d-none', !on);
+    }
+
+    function parseFloatOrNull(id) {
+        const v = document.getElementById(id).value.trim();
+        return v === '' ? null : parseFloat(v);
+    }
+
+    function parseIntOrNull(id) {
+        const v = document.getElementById(id).value.trim();
+        return v === '' ? null : parseInt(v);
+    }
+
+    async function submitPlant() {
+        const name = document.getElementById('f-name').value.trim();
+        const speciesId = document.getElementById('f-species').value;
+        const errorEl = document.getElementById('form-error');
+
+        if (!name) { showError('Plant name is required.'); return; }
+        if (!speciesId) { showError('Please select a species.'); return; }
+
+        const body = {
+            name,
+            speciesId: parseInt(speciesId),
+            heightCm: parseFloatOrNull('f-height'),
+            potSizeCm: parseIntOrNull('f-pot')
+        };
+
+        const settings = {
+            tempMin: parseFloatOrNull('f-tmin'),
+            tempMax: parseFloatOrNull('f-tmax'),
+            humMin: parseIntOrNull('f-hmin'),
+            humMax: parseIntOrNull('f-hmax'),
+            soilMoistureMin: parseIntOrNull('f-smmin'),
+            lightMin: parseIntOrNull('f-lmin')
+        };
+        const hasCustom = Object.values(settings).some(v => v !== null);
+
+        setSubmitting(true);
+        errorEl.classList.add('d-none');
+
+        try {
+            const res = await fetch('/api/plants', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) { showError('Failed to create plant. Check server logs.'); setSubmitting(false); return; }
+            const created = await res.json();
+
+            if (hasCustom) {
+                await fetch(`/api/plants/${created.id}/settings`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+            }
+
+            addModal.hide();
+            await refresh();
+        } catch (e) {
+            showError('Network error: ' + e.message);
+        }
+        setSubmitting(false);
+    }
+
+    //--------------------------
     async function loadSummary() {
         const res = await fetch('/api/dashboard/summary');
         const d = await res.json();
@@ -107,7 +292,6 @@
         } else {
             el.innerHTML = '<p class="text-muted small">No events yet</p>';
         }
-
         document.getElementById('last-update').textContent = 'Updated: ' + new Date().toLocaleTimeString();
     }
 
