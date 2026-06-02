@@ -24,14 +24,8 @@ public class Plant {
     @Column(name = "hum_min", nullable = false)
     private Integer humMin;
 
-    @Column(name = "hum_max", nullable = false)
-    private Integer humMax;
-
     @Column(name = "soil_moisture_min", nullable = false)
     private Integer soilMoistureMin;
-
-    @Column(name = "soil_moisture_max")
-    private Integer soilMoistureMax;
 
     @Column(name = "ec_target")
     private BigDecimal ecTarget;
@@ -61,12 +55,8 @@ public class Plant {
     public void setTempMax(BigDecimal tempMax) { this.tempMax = tempMax; }
     public Integer getHumMin() { return humMin; }
     public void setHumMin(Integer humMin) { this.humMin = humMin; }
-    public Integer getHumMax() { return humMax; }
-    public void setHumMax(Integer humMax) { this.humMax = humMax; }
     public Integer getSoilMoistureMin() { return soilMoistureMin; }
     public void setSoilMoistureMin(Integer soilMoistureMin) { this.soilMoistureMin = soilMoistureMin; }
-    public Integer getSoilMoistureMax() { return soilMoistureMax != null ? soilMoistureMax : 80; }
-    public void setSoilMoistureMax(Integer soilMoistureMax) { this.soilMoistureMax = soilMoistureMax; }
     public BigDecimal getEcTarget() { return ecTarget; }
     public void setEcTarget(BigDecimal ecTarget) { this.ecTarget = ecTarget; }
     public Integer getLightMin() { return lightMin; }

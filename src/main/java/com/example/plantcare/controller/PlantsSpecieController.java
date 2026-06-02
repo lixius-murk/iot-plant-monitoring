@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/species")
-public class PlantsController {
+public class PlantsSpecieController {
 
     @Autowired
     private PlantSpeciesRepo speciesRepo;
@@ -28,7 +28,6 @@ public class PlantsController {
                     m.put("tempMin", p.getTempMin());
                     m.put("tempMax", p.getTempMax());
                     m.put("humMin", p.getHumMin());
-                    m.put("humMax", p.getHumMax());
                     m.put("soilMoistureMin", p.getSoilMoistureMin());
                     m.put("lightMin", p.getLightMin());
                     return m;

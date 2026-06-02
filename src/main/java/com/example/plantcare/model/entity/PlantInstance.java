@@ -51,14 +51,8 @@ public class PlantInstance {
     @Column(name = "custom_hum_min")
     private Integer customHumMin;
 
-    @Column(name = "custom_hum_max")
-    private Integer customHumMax;
-
     @Column(name = "custom_soil_moisture_min")
     private Integer customSoilMoistureMin;
-
-    @Column(name = "custom_soil_moisture_max")
-    private Integer customSoilMoistureMax;
 
     @Column(name = "custom_light_min")
     private Integer customLightMin;
@@ -120,16 +114,8 @@ public class PlantInstance {
         return customHumMin != null ? customHumMin : species.getHumMin();
     }
 
-    public Integer getEffectiveHumMax() {
-        return customHumMax != null ? customHumMax : species.getHumMax();
-    }
-
     public Integer getEffectiveSoilMoistureMin() {
         return customSoilMoistureMin != null ? customSoilMoistureMin : species.getSoilMoistureMin();
-    }
-
-    public Integer getEffectiveSoilMoistureMax() {
-        return customSoilMoistureMax != null ? customSoilMoistureMax : species.getSoilMoistureMax();
     }
 
     public Integer getEffectiveLightMin() {
@@ -172,14 +158,8 @@ public class PlantInstance {
     public Integer getCustomHumMin() { return customHumMin; }
     public void setCustomHumMin(Integer customHumMin) { this.customHumMin = customHumMin; }
 
-    public Integer getCustomHumMax() { return customHumMax; }
-    public void setCustomHumMax(Integer customHumMax) { this.customHumMax = customHumMax; }
-
     public Integer getCustomSoilMoistureMin() { return customSoilMoistureMin; }
     public void setCustomSoilMoistureMin(Integer customSoilMoistureMin) { this.customSoilMoistureMin = customSoilMoistureMin; }
-
-    public Integer getCustomSoilMoistureMax() { return customSoilMoistureMax; }
-    public void setCustomSoilMoistureMax(Integer customSoilMoistureMax) { this.customSoilMoistureMax = customSoilMoistureMax; }
 
     public Integer getCustomLightMin() { return customLightMin; }
     public void setCustomLightMin(Integer customLightMin) { this.customLightMin = customLightMin; }

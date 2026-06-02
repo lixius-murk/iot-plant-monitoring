@@ -24,6 +24,7 @@ public class Dto {
         public void setPotSizeCm(Integer potSizeCm) { this.potSizeCm = potSizeCm; }
     }
 
+
     public static class PlantResponse {
         private Long id;
         private String name;
@@ -31,21 +32,11 @@ public class Dto {
         private Integer state;
         private String health;
         private BigDecimal heightCm;
-        private Integer potSizeCm;
+        private BigDecimal tempMin;
+        private Integer soilMoistureMin;
+        private  Integer potSizeCm;
+        private Integer lightMin;
         private LocalDateTime lastWateredAt;
-
-        public static PlantResponse from(PlantInstance p) {
-            PlantResponse dto = new PlantResponse();
-            dto.id = p.getId();
-            dto.name = p.getName();
-            dto.species = p.getSpecies() != null ? p.getSpecies().getName() : null;
-            dto.state = p.getCurrentState();
-            dto.health = p.getHealthStatus();
-            dto.heightCm = p.getCurrentHeightCm();
-            dto.potSizeCm = p.getCurrentPotSizeCm();
-            dto.lastWateredAt = p.getLastWateredAt();
-            return dto;
-        }
 
         public Long getId() { return id; }
         public String getName() { return name; }
@@ -55,6 +46,35 @@ public class Dto {
         public BigDecimal getHeightCm() { return heightCm; }
         public Integer getPotSizeCm() { return potSizeCm; }
         public LocalDateTime getLastWateredAt() { return lastWateredAt; }
+
+        public void setId(Long id_) { id = id_; }
+        public void setName(String name_) { name = name_; }
+        public void setSpecies(String sp) {species = sp; }
+        public void setState(Integer st) { state = st; }
+        public void setHealth(String h) {health = h; }
+        public void setSoilMoistureMin(Integer st) { soilMoistureMin = st; }
+        public void setTempMin(BigDecimal st) { tempMin = st; }
+        public void setLightMin(Integer st) { lightMin = st; }
+
+        public void setHeightCm(BigDecimal h) {heightCm = h; }
+        public void setPotSizeCm(Integer s) { potSizeCm = s; }
+        public void setLastWateredAt(LocalDateTime t) { lastWateredAt = t; }
+
+
+        public static PlantResponse from(PlantInstance plant) {
+            PlantResponse response = new PlantResponse();
+            response.setId(plant.getId());
+            response.setName(plant.getName());
+            response.setSpecies(plant.getSpecies() != null ? plant.getSpecies().getName() : null);
+            response.setState(plant.getCurrentState());
+            response.setHealth(plant.getHealthStatus());
+            response.setHeightCm(plant.getCurrentHeightCm());
+            response.setTempMin(plant.getEffectiveTempMin());
+            response.setSoilMoistureMin(plant.getEffectiveSoilMoistureMin());
+            response.setLightMin(plant.getEffectiveLightMin());
+            response.setLastWateredAt(plant.getLastWateredAt());
+            return response;
+        }
     }
 
     public static class TelemetryData {

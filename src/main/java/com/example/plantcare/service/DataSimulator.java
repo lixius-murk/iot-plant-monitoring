@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class DataSimulator {
 
+    private int maxHum = 80;
     private final Random random = new Random();
     private final Map<Long, DeviceState> deviceStates = new ConcurrentHashMap<>();
 
@@ -57,21 +58,19 @@ public class DataSimulator {
 
     private Integer generateHumidity(PlantInstance plant, DeviceState state) {
         int min = plant.getEffectiveHumMin();
-        int max = plant.getEffectiveHumMax();
-        int prev = state.lastHumidity != null ? state.lastHumidity : (min + max) / 2;
+        int prev = state.lastHumidity != null ? state.lastHumidity : (min + maxHum) / 2;
         int next = prev + random.nextInt(5) - 2;
-        next = Math.max(min, Math.min(max, next));
+        next = Math.max(min, Math.min(maxHum, next));
         state.lastHumidity = next;
         return next;
     }
 
     private Integer generateSoilMoisture(PlantInstance plant, DeviceState state) {
         int min = plant.getEffectiveSoilMoistureMin();
-        int max = plant.getEffectiveSoilMoistureMax();
-        int prev = state.lastSoilMoisture != null ? state.lastSoilMoisture : (min + max) / 2;
-        int next = (int) (prev * 0.98); // evaporation
+        int prev = state.lastSoilMoisture != null ? state.lastSoilMoisture : (min + maxHum) / 2;
+        int next = (int) (prev * 0.98);
         next += random.nextInt(5) - 2;
-        next = Math.max(min - 10, Math.min(max, next)); // allow going below min to trigger events
+        next = Math.max(min - 10, Math.min(maxHum, next)); // allow going below min to trigger events
         state.lastSoilMoisture = next;
         return next;
     }

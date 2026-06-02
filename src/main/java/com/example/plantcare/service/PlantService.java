@@ -24,6 +24,10 @@ public class PlantService {
         return plantRepo.findByIsActiveTrue();
     }
 
+    public List<PlantInstance> getAllPlants() {
+        return plantRepo.findAll();
+    }
+
     public Optional<PlantInstance> findById(Long id) {
         return plantRepo.findById(id);
     }
@@ -45,9 +49,7 @@ public class PlantService {
         p.setCustomTempMin(s.getTempMin());
         p.setCustomTempMax(s.getTempMax());
         p.setCustomHumMin(s.getHumMin());
-        p.setCustomHumMax(s.getHumMax());
         p.setCustomSoilMoistureMin(s.getSoilMoistureMin());
-        p.setCustomSoilMoistureMax(s.getSoilMoistureMax());
         p.setCustomLightMin(s.getLightMin());
         p.setUpdatedAt(LocalDateTime.now());
         return plantRepo.save(p);
