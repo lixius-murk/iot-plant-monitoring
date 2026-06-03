@@ -30,9 +30,6 @@ public class Sensor {
     @Column(name = "pin_number")
     private Integer pinNumber;
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -55,8 +52,6 @@ public class Sensor {
     public void setModel(String model) { this.model = model; }
     public Integer getPinNumber() { return pinNumber; }
     public void setPinNumber(Integer pinNumber) { this.pinNumber = pinNumber; }
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

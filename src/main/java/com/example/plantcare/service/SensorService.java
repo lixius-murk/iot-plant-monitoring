@@ -11,15 +11,16 @@ public class SensorService {
 
     @Autowired
     private SensorRepo sensorRepo;
-
     public List<Sensor> getSensorsByPlant(Long plantId) {
-        return sensorRepo.findAll().stream()
-                .filter(s -> s.getIsActive() && s.getPlantSensors().stream()
-                        .anyMatch(ps -> ps.getIsActive()
-                                && ps.getPlant().getId().equals(plantId)))
-                .toList();
+        return sensorRepo.findActiveByPlantId(plantId);
     }
-
+//    public List<Sensor> getSensorsByPlant(Long plantId) {
+//        return sensorRepo.findAll().stream()
+//                .filter(s -> s.findByIsActiveTrue() && s.getPlantSensors().stream()
+//                        .anyMatch(ps -> ps.getIsActive()
+//                                && ps.getPlant().getId().equals(plantId)))
+//                .toList();
+//    }
     public Sensor save(Sensor s) {
         return sensorRepo.save(s);
     }

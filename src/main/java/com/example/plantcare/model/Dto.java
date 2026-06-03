@@ -76,6 +76,18 @@ public class Dto {
             return response;
         }
     }
+    public static class EventResponse {
+        private String eventType;
+        private String actionTaken;
+        private String timestamp;
+
+        public String getEventType() { return eventType; }
+        public void setEventType(String eventType) { this.eventType = eventType; }
+        public String getActionTaken() { return actionTaken; }
+        public void setActionTaken(String actionTaken) { this.actionTaken = actionTaken; }
+        public String getTimestamp() { return timestamp; }
+        public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+    }
 
     public static class TelemetryData {
         private Long plantId;

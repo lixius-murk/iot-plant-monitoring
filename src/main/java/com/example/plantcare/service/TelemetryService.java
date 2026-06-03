@@ -14,10 +14,14 @@ public class TelemetryService {
     @Autowired
     private TelemetryRepo telemetryRepo;
 
-    public Telemetry save(Telemetry t) {
-        return telemetryRepo.save(t);
+    public Telemetry save(Telemetry telemetry) {
+        System.out.println("Saving telemetry: temp=" + telemetry.getTemperature() +
+                ", humidity=" + telemetry.getHumidityAir() +
+                ", soil=" + telemetry.getSoilMoisture() +
+                ", light=" + telemetry.getLightLux() +
+                ", ec=" + telemetry.getEc());
+        return telemetryRepo.save(telemetry);
     }
-
     public Optional<Telemetry> getLatestByPlant(Long plantId) {
         return telemetryRepo.findLatestByPlantId(plantId);
     }

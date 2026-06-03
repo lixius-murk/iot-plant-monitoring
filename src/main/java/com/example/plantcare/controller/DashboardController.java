@@ -26,8 +26,10 @@ public class DashboardController {
         summary.put("healthyPlants", plantService.countByHealthStatus("HEALTHY"));
         summary.put("plantsNeedingAttention", plantService.countByState(1));
         summary.put("pendingRecommendations", recommendationService.countUnresolved());
-        summary.put("recentEvents", eventService.getRecent());
+
+        summary.put("recentEvents", eventService.getRecentEventsWithCorrectFormat());
         summary.put("recommendations", recommendationService.getUnresolved(5));
+
         return ResponseEntity.ok(summary);
     }
 }

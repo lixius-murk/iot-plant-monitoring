@@ -101,27 +101,7 @@ public class PlantInstance {
     public Optional<Sensor> getLightSensor() {
         return getSensorsByType("LIGHT").stream().findFirst();
     }
-
-    public BigDecimal getEffectiveTempMin() {
-        return customTempMin != null ? customTempMin : species.getTempMin();
-    }
-
-    public BigDecimal getEffectiveTempMax() {
-        return customTempMax != null ? customTempMax : species.getTempMax();
-    }
-
-    public Integer getEffectiveHumMin() {
-        return customHumMin != null ? customHumMin : species.getHumMin();
-    }
-
-    public Integer getEffectiveSoilMoistureMin() {
-        return customSoilMoistureMin != null ? customSoilMoistureMin : species.getSoilMoistureMin();
-    }
-
-    public Integer getEffectiveLightMin() {
-        return customLightMin != null ? customLightMin : species.getLightMin();
-    }
-
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -181,4 +161,56 @@ public class PlantInstance {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public BigDecimal getEffectiveTempMin() {
+        if (customTempMin != null) {
+            return customTempMin;
+        }
+        if (species != null && species.getTempMin() != null) {
+            return species.getTempMin();
+        }
+        return BigDecimal.valueOf(18.0);   
+    }
+
+    public BigDecimal getEffectiveTempMax() {
+        if (customTempMax != null) {
+            return customTempMax;
+        }
+        if (species != null && species.getTempMax() != null) {
+            return species.getTempMax();
+        }
+        return BigDecimal.valueOf(28.0);   
+    }
+
+    public Integer getEffectiveHumMin() {
+        if (customHumMin != null) {
+            return customHumMin;
+        }
+        if (species != null && species.getHumMin() != null) {
+            return species.getHumMin();
+        }
+        return 40; 
+    }
+
+    public Integer getEffectiveSoilMoistureMin() {
+        if (customSoilMoistureMin != null) {
+            return customSoilMoistureMin;
+        }
+        if (species != null && species.getSoilMoistureMin() != null) {
+            return species.getSoilMoistureMin();
+        }
+        return 40;   
+    }
+
+    public Integer getEffectiveLightMin() {
+        if (customLightMin != null) {
+            return customLightMin;
+        }
+        if (species != null && species.getLightMin() != null) {
+            return species.getLightMin();
+        }
+        return 3000;   
+    }
+
+
 }
