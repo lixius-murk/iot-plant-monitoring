@@ -2,6 +2,7 @@
 DELETE FROM recommendations;
 DELETE FROM commands;
 DELETE FROM events;
+DELETE FROM recommendation_msg;
 DELETE FROM telemetry;
 DELETE FROM sensors;
 DELETE FROM plant_instances;
@@ -12,6 +13,7 @@ ALTER SEQUENCE sensors_id_seq RESTART WITH 1;
 ALTER SEQUENCE telemetry_id_seq RESTART WITH 1;
 ALTER SEQUENCE events_id_seq RESTART WITH 1;
 ALTER SEQUENCE recommendations_id_seq RESTART WITH 1;
+ALTER SEQUENCE recommendation_msg_id_seq RESTART WITH 1;   -- added
 ALTER SEQUENCE plant_species_id_seq RESTART WITH 1;
 
 INSERT INTO plant_species (id, name, temp_min, temp_max, soil_moisture_min, soil_moisture_max, light_min, recommended_pot_size) VALUES

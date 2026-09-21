@@ -57,8 +57,8 @@
             color: #2d4a2d;
         }
 
-        .stat-card.attention .value { color: #ad6c35; }
-        .stat-card.warning .value { color: #9a2f29; }
+        .stat-card.warning .value { color: #ad6c35; }
+        .stat-card.attention .value { color: #9a2f29; }
 
         .card {
             background: #ededed;
@@ -102,8 +102,8 @@
         }
 
         .badge.healthy { background: #d4edda; color: #2d4a2d; }
-        .badge.attention { background: #fff3cd; color: #ad6c35; }
-        .badge.danger { background: #f8d7da; color: #9a2f29; }
+        .badge.danger { background: #fff3cd; color: #ad6c35; }
+        .badge.attention { background: #f8d7da; color: #9a2f29; }
         .badge.info { background: #d1ecf1; color: #0c5460; }
 
         button {
@@ -328,7 +328,7 @@
             if (recommendations && recommendations.length) {
                 recHtml = `<h4>Рекомендации: </h4><ul>`;
                 recommendations.forEach(r => {
-                    recHtml += `<li>${r.message} <small>(${r.severity})</small></li>`;
+                    recHtml += `<li>${r.message? r.message.msg : ''} <small>(${r.severity})</small></li>`;
                 });
                 recHtml += `</ul>`;
             }
@@ -400,7 +400,7 @@
 
                 recsDiv.innerHTML = data.recommendations.map(r => `
                         <div class="rec-item ${r.severity === 'WARNING' ? 'warning' : (r.severity === 'CRITICAL' ? 'critical' : '')}">
-                            <div class="rec-message">${r.message}</div>
+                            <div class="rec-message">${r.message ? r.message.msg : ''}</div>
                             <div>
                                 <span class="badge ${r.severity === 'WARNING' ? 'attention' : (r.severity === 'CRITICAL' ? 'danger' : 'info')}">${r.severity || 'INFO'}</span>
                                 <span class="rec-resolve" onclick="resolveRecommendation(${r.idRecommendation})">Отметить как решенное</span>
