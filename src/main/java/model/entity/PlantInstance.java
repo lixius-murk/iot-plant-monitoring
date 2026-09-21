@@ -92,6 +92,6 @@ public class PlantInstance {
     }
 
     public void setActive(boolean active) {
-        active = active;
+        this.active = active;
     }
 }

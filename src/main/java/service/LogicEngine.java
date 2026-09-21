@@ -9,6 +9,7 @@ import model.entity.Telemetry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import repo.RecommendationMsgRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,6 +37,9 @@ public class LogicEngine {
 
     @Autowired
     private TelemetryService telemetryService;
+
+    @Autowired
+    private RecommendationMsgRepository recommendationMsgRepository;
 
     public void evaluate(Telemetry telemetry, PlantInstance plant) {
         List<Event> triggeredEvents = new ArrayList<>();
@@ -130,29 +134,31 @@ public class LogicEngine {
 
     @Scheduled(cron = "0 0 12 * * *")
     public void checkGrowth() {
+        RecommendationMsg repotMsg = recommendationMsgRepository.findById(9L).orElse(null);
+        if (repotMsg == null) return;
         List<PlantInstance> plants = plantService.getAllActive();
         for (PlantInstance plant : plants) {
             Telemetry latestTelemetry = telemetryService.getLatestByPlant(plant.getId()).orElse(null);
-            if (latestTelemetry == null || latestTelemetry.getSoilMoisture() == null) continue;
-            if (plant.getHeight() == null || plant.getPotSize() == null) continue;
+            if (latestTelemetry != null && latestTelemetry.getSoilMoisture() != null) {
+                if (plant.getHeight() != null && plant.getPotSize() != null){
+                    BigDecimal currentHeight = plant.getHeight();
+                    BigDecimal potSize = BigDecimal.valueOf(plant.getPotSize());
+                    BigDecimal recommendedSize = plant.getSpecies().getRecommendedPotSize() != null
+                            ? BigDecimal.valueOf(plant.getSpecies().getRecommendedPotSize()) : BigDecimal.valueOf(40);
+                    if (currentHeight.compareTo(potSize.multiply(BigDecimal.valueOf(0.9))) > 0) {
+                        Recommendation rec = new Recommendation();
+                        rec.setPlant(plant);
+                        rec.setMessage(repotMsg);
+                        rec.setSeverity("INFO");
+                        rec.setCreatedAt(LocalDateTime.now());
+                        rec.setResolved(false);
+                        recommendationService.save(rec);
+                    }
 
-            BigDecimal currentHeight = plant.getHeight();
-            BigDecimal potSize = BigDecimal.valueOf(plant.getPotSize());
-            BigDecimal recommendedSize = plant.getSpecies().getRecommendedPotSize() != null
-                    ? BigDecimal.valueOf(plant.getSpecies().getRecommendedPotSize())
-                    : BigDecimal.valueOf(15);
 
-            if (currentHeight.compareTo(potSize.multiply(BigDecimal.valueOf(0.9))) > 0) {
-                Recommendation rec = new Recommendation();
-                rec.setPlant(plant);
-                rec.setMessage(new RecommendationMsg(String.format("Растение достигло высоты %.1f см при размере горшка %d см. " +
-                                "Рекомендуется пересадка в горшок %d см.",
-                        currentHeight, plant.getPotSize(), recommendedSize.intValue())));
-                rec.setSeverity("INFO");
-                rec.setCreatedAt(LocalDateTime.now());
-                rec.setResolved(false);
-                recommendationService.save(rec);
-            }
+                };
+
+            };
         }
     }
 }

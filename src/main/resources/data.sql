@@ -8,6 +8,7 @@ DELETE FROM sensors;
 DELETE FROM plant_instances;
 DELETE FROM plant_species;
 
+
 ALTER SEQUENCE plant_instances_id_seq RESTART WITH 1;
 ALTER SEQUENCE sensors_id_seq RESTART WITH 1;
 ALTER SEQUENCE telemetry_id_seq RESTART WITH 1;
@@ -51,7 +52,9 @@ INSERT INTO recommendation_msg (id, msg) VALUES (1, 'Низкая темпера
                                                     (5, 'Высокая температура!'),
                                                     (6, 'Высокий уровень влажности воздуха!'),
                                                     (7, 'Высокий уровень влажности почвы!'),
-                                                    (8, 'Слишком много света!');
+                                                    (8, 'Слишком много света!'),
+                                                    (9, 'Возможно, требуется пересадка!');
+
 
 
 
@@ -63,10 +66,14 @@ INSERT INTO telemetry (id, id_plant, id_sensor, temp, humidity, soil_moisture, l
 
 
 INSERT INTO recommendations (id, id_plant, msg_id, severity, resolved, created_at) VALUES
-                                                                                        (1, 4, 1, 'WARNING', false, NOW() - INTERVAL '1 day'),
-                                                                                        (2, 2, 1, 'WARNING', false, NOW() - INTERVAL '1 day'),
+                                                                                        (1, 4, 1, 'CRITICAL', false, NOW() - INTERVAL '1 day'),
+                                                                                        (2, 2, 1, 'CRITICAL', false, NOW() - INTERVAL '1 day'),
 
-                                                                                        (3, 2, 2, 'CRITICAL', false, NOW() - INTERVAL '2 days');
+                                                                                        (3, 2, 2, 'CRITICAL', false, NOW() - INTERVAL '2 days'),
+                                                                                        (4, 3, 9, 'INFO', false, NOW() - INTERVAL '1 days');
+
+
+
 
 SELECT setval('plant_instances_id_seq', COALESCE((SELECT MAX(id) FROM plant_instances), 4));
 SELECT setval('sensors_id_seq', COALESCE((SELECT MAX(id) FROM sensors), 20));

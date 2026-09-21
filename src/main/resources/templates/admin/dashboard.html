@@ -162,17 +162,19 @@
             border-left: 4px solid #519657;
         }
 
-        .rec-item.warning { border-left-color: #ad6c35; }
+
         .rec-item.critical { border-left-color: #9a2f29; }
+        .rec-item.info { border-left-color: #bd832a; }
 
         .rec-message {
-            font-size: 14px;
+            font-size: 20px;
             margin-bottom: 8px;
+            color: #F0F4F0FF;
         }
 
         .rec-resolve {
             font-size: 12px;
-            color: #519657;
+            color: #333333;
             cursor: pointer;
             text-decoration: underline;
         }
@@ -180,7 +182,7 @@
         .loader {
             text-align: center;
             padding: 20px;
-            color: #666;
+            color: #333333;
         }
 
         .plant-row {
@@ -291,7 +293,6 @@
                                         <td>${p.id}</td>
                                         <td>${p.name}</td>
                                         <td><span class="badge ${p.state === 0 ? 'healthy' : 'attention'}">${p.state === 0 ? 'Норма' : 'Внимание'}</span></td>
-                                        <td><span class="badge ${p.health === 'HEALTHY' ? 'healthy' : 'attention'}">${p.health || 'HEALTHY'}</span></td>
                                         <td><button class="secondary" onclick="event.stopPropagation();waterPlant(${p.id})">"Полить"</button></td>
                                     </tr>
                                 `).join('')}
@@ -399,11 +400,10 @@
                 }
 
                 recsDiv.innerHTML = data.recommendations.map(r => `
-                        <div class="rec-item ${r.severity === 'WARNING' ? 'warning' : (r.severity === 'CRITICAL' ? 'critical' : '')}">
+                        <div class="rec-item ${r.severity === 'INFO' ? 'инфо' : (r.severity === 'CRITICAL' ? 'критично' : '')}">
                             <div class="rec-message">${r.message ? r.message.msg : ''}</div>
                             <div>
-                                <span class="badge ${r.severity === 'WARNING' ? 'attention' : (r.severity === 'CRITICAL' ? 'danger' : 'info')}">${r.severity || 'INFO'}</span>
-                                <span class="rec-resolve" onclick="resolveRecommendation(${r.idRecommendation})">Отметить как решенное</span>
+                                <span class="rec-resolve" onclick="resolveRecommendation(${r.id})">Отметить как решенное</span>
                             </div>
                         </div>
                     `).join('');
@@ -427,12 +427,14 @@
 
 
     async function resolveRecommendation(recId) {
+        console.log("trying to solve: ", recId);
         try {
             if (currentPlantId) {
                 await fetch(`/api/plants/${currentPlantId}/recommendations/${recId}/resolve`, {
-                    method: 'POST',
+                    method: 'UPDATE',
                     headers: { 'Content-Type': 'application/json' },
                 });
+                console.log("fenched data")
                 await refreshAll();
                 if (currentPlantId) await loadPlantDetails(currentPlantId);
             }

@@ -21,6 +21,7 @@ public class Recommendation {
     @JoinColumn(name = "msg_id")
     private RecommendationMsg message;
 
+    //CRITICAL, INFO
     private String severity;
     private Boolean resolved = false;
     private LocalDateTime createdAt;
