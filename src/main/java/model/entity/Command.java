@@ -25,7 +25,6 @@ public class Command {
     private String status; // PENDING, SENT, ACKNOWLEDGED, FAILED, CANCELLED
     private Integer retryCount = 0;
     private Integer maxRetries = 3;
-    private String errorMessage;
 
     private LocalDateTime createdAt;
     private LocalDateTime sentAt;
@@ -65,51 +64,33 @@ public class Command {
     public String getStatus() {
         return status;
     }
-
     public void setStatus(String status) {
         this.status = status;
     }
-
     public Integer getRetryCount() {
         return retryCount;
     }
-
     public void setRetryCount(Integer retryCount) {
         this.retryCount = retryCount;
     }
-
     public Integer getMaxRetries() {
         return maxRetries;
     }
-
     public void setMaxRetries(Integer maxRetries) {
         this.maxRetries = maxRetries;
     }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
     public LocalDateTime getSentAt() {
         return sentAt;
     }
-
     public LocalDateTime getAcknowledgedAt() {
         return acknowledgedAt;
     }
-
     public LocalDateTime getCompletedAt() {
         return completedAt;
     }

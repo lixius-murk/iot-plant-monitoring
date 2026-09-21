@@ -1,5 +1,6 @@
 package service;
 
+import groovy.util.logging.Log;
 import model.entity.Command;
 import model.entity.Event;
 import model.entity.PlantInstance;
@@ -45,11 +46,7 @@ public class CommandService {
     }
 
     public void fail(Long commandId, String error) {
-        commandRepository.findById(commandId).ifPresent(c -> {
-                c.setStatus("FAILED");
-                c.setErrorMessage(error);
-                commandRepository.save(c);
-            });
+        System.out.println("failed to add commend: " + error);
     }
 
     public void cancel(Long commandId) {
