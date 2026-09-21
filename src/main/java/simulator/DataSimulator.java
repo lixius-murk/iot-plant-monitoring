@@ -97,22 +97,17 @@ public class DataSimulator {
     }
 
     private Integer generateLight(PlantInstance plant, DeviceState state) {
-        LocalTime now = LocalTime.now();
-        int hour = now.getHour();
 
-        if (hour < 7 || hour > 20) {
-            return 50;
-        }
+//        if (hour < 7 || hour > 20) {
+//            return 50;
+//        }
 
-        int peakHour = 13;
-        int maxLight = 12000;
-        int minLight = 500;
+        int maxLight = 1000;
+        int avgLight = 70;
 
-        double factor = 1 - Math.pow((hour - peakHour) / 7.0, 2);
-        factor = Math.max(0.1, factor);
 
-        int light = (int)(minLight + (maxLight - minLight) * factor);
-        light *= (0.8 + random.nextDouble() * 0.4);
+        int light = avgLight;
+        light *= (int)(0.8 + random.nextDouble() * 0.4);
 
         return Math.min(maxLight, Math.max(50, light));
     }

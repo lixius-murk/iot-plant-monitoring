@@ -18,16 +18,16 @@ ALTER SEQUENCE recommendation_msg_id_seq RESTART WITH 1;   -- added
 ALTER SEQUENCE plant_species_id_seq RESTART WITH 1;
 
 INSERT INTO plant_species (id, name, temp_min, temp_max, soil_moisture_min, soil_moisture_max, light_min, recommended_pot_size) VALUES
-                                                                                                                                                 (1, 'Монстера',  18.0, 27.0, 30, 60, 2000, 30),
-                                                                                                                                                 (2, 'Тутовые',  16.0, 26.0, 25, 55, 3000, 35),
-                                                                                                                                                 (3, 'Спаржевые', 15.0, 30.0, 15, 40, 1000, 15),
-                                                                                                                                                 (4, 'Ароидные', 18.0, 25.0, 35, 65, 1500, 25);
+                                                                                                                                                 (1, 'Монстера',  18.0, 27.0, 30, 60, 80, 30),
+                                                                                                                                                 (2, 'Тутовые',  16.0, 26.0, 25, 55, 100, 35),
+                                                                                                                                                 (3, 'Спаржевые', 15.0, 30.0, 15, 40, 70, 15),
+                                                                                                                                                 (4, 'Ароидные', 18.0, 25.0, 35, 65, 100, 25);
 
-INSERT INTO plant_instances (id, name, id_species, height, pot_size, state, active, last_watered, last_checked, temp_min, soil_moisture_min, light_min) VALUES
-                                                                                                                                                            (1, 'Монстера альцирана', 1, 45.0, 25, 0, true, NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 hour', 18.0, 30, 2000),
-                                                                                                                                                            (2, 'Инжир', 2, 60.0, 30, 0, true, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 hour', 16.0, 25, 3000),
-                                                                                                                                                            (3, 'Змеиное растение', 3, 35.0, 15, 0, true, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 hour', 15.0, 15, 1000),
-                                                                                                                                                            (4, 'Лилия мира', 4, 25.0, 18, 1, true, NOW() - INTERVAL '5 days', NOW() - INTERVAL '1 hour', 18.0, 45, 1500);
+INSERT INTO plant_instances (id, name, id_species, height, pot_size, state, active, last_watered, last_checked, temp_min, soil_moisture_min) VALUES
+                                                                                                                                                            (1, 'Монстера альцирана', 1, 45.0, 25, 0, true, NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 hour', 18.0, 30),
+                                                                                                                                                            (2, 'Инжир', 2, 60.0, 30, 0, true, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 hour', 16.0, 25),
+                                                                                                                                                            (3, 'Змеиное растение', 3, 35.0, 15, 0, true, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 hour', 15.0, 15),
+                                                                                                                                                            (4, 'Лилия мира', 4, 25.0, 18, 1, true, NOW() - INTERVAL '5 days', NOW() - INTERVAL '1 hour', 18.0, 45);
 INSERT INTO sensors (id, id_plant, type, label, active) VALUES
                                                             (1, 1, 'TEMPERATURE', 'Монстера альцирана - темп', true),
                                                             (2, 1, 'HUMIDITY_AIR', 'Монстера альцирана - влажн воздуха', true),

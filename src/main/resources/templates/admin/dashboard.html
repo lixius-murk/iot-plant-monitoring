@@ -346,11 +346,10 @@
                         </div>
                         <div>
                             <h4>Настройки</h4>
-                            <p><strong>Мин. температура: </strong> ${plant.tempMin || '—'} °C</p>
-                            <p><strong>Мин. влажность почвы: </strong> ${plant.soilMoistureMin || '—'} %</p>
-                            <p><strong>Мин. освещенность: </strong> ${plant.lightMin || '—'} lux</p>
-                        </div>
-                    </div>
+                                <p><strong>Мин. температура: </strong> ${plant.tempMin ?? plant.species?.tempMin ?? '—'} °C</p>
+                                <p><strong>Мин. влажность почвы: </strong> ${plant.soilMoistureMin ?? plant.species?.soilMoistureMin ?? '—'} %</p>
+                                <p><strong>Мин. освещенность: </strong> ${plant.lightMin ?? plant.species?.lightMin ?? '—'} lux</p>                       </div>
+                         </div>
                     ${recHtml}
                 `;
 
@@ -429,15 +428,12 @@
     async function resolveRecommendation(recId) {
         console.log("trying to solve: ", recId);
         try {
-            if (currentPlantId) {
-                await fetch(`/api/plants/${currentPlantId}/recommendations/${recId}/resolve`, {
-                    method: 'UPDATE',
-                    headers: { 'Content-Type': 'application/json' },
-                });
-                console.log("fenched data")
-                await refreshAll();
-                if (currentPlantId) await loadPlantDetails(currentPlantId);
-            }
+            await fetch(`/api/recommendations/${recId}/resolve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            console.log("fetched data");
+            await refreshAll();
         } catch (error) {
             console.error('Ошибка:', error);
         }
