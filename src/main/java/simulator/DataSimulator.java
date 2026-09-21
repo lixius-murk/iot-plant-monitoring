@@ -103,11 +103,10 @@ public class DataSimulator {
 //        }
 
         int maxLight = 1000;
-        int avgLight = 70;
+        int avgLight = 180;
 
 
-        int light = avgLight;
-        light *= (int)(0.8 + random.nextDouble() * 0.4);
+        int light = (int)(avgLight + random.nextDouble() * 0.4);
 
         return Math.min(maxLight, Math.max(50, light));
     }
@@ -129,6 +128,9 @@ public class DataSimulator {
                 : plant.getSpecies().getSoilMoistureMin();
     }
 
+    public void startWatering(Long plantId) {
+        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startWatering(20);
+    }
     private int getEffectiveSoilMoistureMax(PlantInstance plant) {
         return plant.getSpecies().getSoilMoistureMax();
     }
@@ -148,6 +150,7 @@ public class DataSimulator {
 
         public Integer getLastHumidityAir() { return lastHumidityAir; }
         public void setLastHumidityAir(Integer lastHumidityAir) { this.lastHumidityAir = lastHumidityAir; }
+
 
         public boolean isWateringActive() { return wateringActive; }
         public void setWateringActive(boolean wateringActive) { this.wateringActive = wateringActive; }

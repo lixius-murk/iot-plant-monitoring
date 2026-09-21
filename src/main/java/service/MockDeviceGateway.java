@@ -4,6 +4,7 @@ import model.entity.Command;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import simulator.DataSimulator;
 
 import java.util.Random;
 
@@ -15,6 +16,8 @@ public class MockDeviceGateway {
 
     @Autowired(required = false)
     private CommandService commandService;
+    @Autowired
+    private DataSimulator dataSimulator;
 
     @Async
     public void sendCommand(Command command) {
@@ -28,5 +31,8 @@ public class MockDeviceGateway {
 
         commandService.acknowledge(command.getIdCommand());
 
+        if ("WATERING".equals(command.getCommandType())) {
+            dataSimulator.startWatering(command.getPlant().getId());
+        }
     }
 }

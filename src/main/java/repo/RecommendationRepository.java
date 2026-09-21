@@ -14,6 +14,7 @@ import java.util.List;
 @Repository
 public interface RecommendationRepository extends JpaRepository<Recommendation, Long> {
 
+    boolean existsByPlant_IdAndMessage_IdAndResolvedFalse(Long plantId, Long messageId);
 
     @Query("SELECT r FROM Recommendation r WHERE r.resolved = false " +
             "AND r.severity IN ('WARNING', 'CRITICAL') " +

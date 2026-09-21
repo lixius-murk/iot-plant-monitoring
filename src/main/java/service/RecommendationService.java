@@ -18,6 +18,9 @@ public class RecommendationService {
         return recommendationRepository.countByResolvedFalse();
     }
 
+    public boolean existsUnresolved(Long plantId, Long msgId) {
+        return recommendationRepository.existsByPlant_IdAndMessage_IdAndResolvedFalse(plantId, msgId);
+    }
     public List<Object[]> getUnresolved() {
         return recommendationRepository.getUnresolved();
     }

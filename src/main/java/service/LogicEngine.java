@@ -43,14 +43,15 @@ public class LogicEngine {
 
     public void evaluate(Telemetry telemetry, PlantInstance plant) {
         List<Event> triggeredEvents = new ArrayList<>();
+        boolean hasProblem = false;
 
         if (telemetry.getSoilMoisture() != null) {
             int minMoisture = getEffectiveSoilMoistureMin(plant);
 
             if (telemetry.getSoilMoisture() < minMoisture) {
-                Event event = createEvent(plant, "WATERING",
-                        "Низкая влажность почвы: " + telemetry.getSoilMoisture() + "%");
-                triggeredEvents.add(event);
+                hasProblem = true;
+                addRecommendation(plant, 3L, "WARNING");
+                triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив"));
             }
         }
 
@@ -58,9 +59,9 @@ public class LogicEngine {
             BigDecimal minTemp = getEffectiveTempMin(plant);
 
             if (telemetry.getTemp().compareTo(minTemp) < 0) {
-                Event event = createEvent(plant, "HEATING",
-                        "Низкая температура: " + telemetry.getTemp() + "°C");
-                triggeredEvents.add(event);
+                hasProblem = true;
+                addRecommendation(plant, 1L, "WARNING");
+                triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев"));
             }
         }
 
@@ -68,9 +69,9 @@ public class LogicEngine {
             int minLight = getEffectiveLightMin(plant);
 
             if (telemetry.getLight() < minLight) {
-                Event event = createEvent(plant, "LIGHT_CONTROL",
-                        "Недостаточно света: " + telemetry.getLight() + " lux");
-                triggeredEvents.add(event);
+                hasProblem = true;
+                addRecommendation(plant, 4L, "WARNING");
+                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Открыты шторы"));
             }
         }
 
@@ -79,9 +80,19 @@ public class LogicEngine {
             dispatchCommandFor(plant, event);
         }
 
-        Integer newState = savedEvents.isEmpty() ? 0 : 1;
+        Integer newState = hasProblem ? 1 : 0;
         plant.setState(newState);
         plantService.updateState(plant.getId(), newState);
+    }
+
+    private void addRecommendation(PlantInstance plant, Long msgId, String severity) {
+        if (recommendationService.existsUnresolved(plant.getId(), msgId)) return;
+
+        RecommendationMsg msg = recommendationMsgRepository.findById(msgId).orElse(null);
+        if (msg == null) return;
+
+        Recommendation rec = new Recommendation(plant, msg, severity);
+        recommendationService.save(rec);
     }
 
     private void dispatchCommandFor(PlantInstance plant, Event event) {
