@@ -20,6 +20,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event e WHERE e.status IN (0, 1) ORDER BY e.id DESC")
     List<Event> findPendingEvents();
 
+    boolean existsByPlantIdAndTypeAndStatusIn(Long plantId, String type, List<Integer> statuses);
+
 
     @Query("SELECT e FROM Event e ORDER BY e.time DESC LIMIT 20")
     List<Event> findLast20Events();

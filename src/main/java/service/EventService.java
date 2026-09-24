@@ -23,6 +23,9 @@ public class EventService {
         return eventRepository.findByPlantId(plantId);
     }
 
+    public boolean existsPending(Long plantId, String type) {
+        return eventRepository.existsByPlantIdAndTypeAndStatusIn(plantId, type, List.of(0, 1));
+    }
     public Event logEvent(String type, String action, Long plantId) {
         Event event = new Event();
         event.setType(type);

@@ -52,7 +52,9 @@ public class LogicEngine {
         if (telemetry.getSoilMoisture() != null) {
             int minMoisture = getEffectiveSoilMoistureMin(plant);
 
-            if (telemetry.getSoilMoisture() < minMoisture) {
+            if (telemetry.getSoilMoisture() < minMoisture
+                    && !eventService.existsPending(plant.getId(), "WATERING")) {
+
                 hasProblem = true;
                 addRecommendation(plant, 3L, "CRITICAL");
                 triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив для "+plant.getName()));
@@ -60,9 +62,12 @@ public class LogicEngine {
         }
 
         if (telemetry.getTemp() != null) {
-            BigDecimal minTemp = getEffectiveTempMin(plant);
 
-            if (telemetry.getTemp().compareTo(minTemp) < 0) {
+            BigDecimal minTemp = getEffectiveTempMin(plant);
+            System.out.println("temp check: current=" + telemetry.getTemp() + " min=" + minTemp + " plant=" + plant.getName());
+
+            if (telemetry.getTemp().compareTo(minTemp) < 0
+                    && !eventService.existsPending(plant.getId(), "HEATING")) {
                 hasProblem = true;
                 addRecommendation(plant, 1L, "CRITICAL");
                 triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для "+plant.getName()));
@@ -72,7 +77,8 @@ public class LogicEngine {
         if (telemetry.getLight() != null) {
             int minLight = getEffectiveLightMin(plant);
 
-            if (telemetry.getLight() < minLight) {
+            if (telemetry.getLight() < minLight
+                    && !eventService.existsPending(plant.getId(), "LIGHT_CONTROL")) {
                 hasProblem = true;
                 addRecommendation(plant, 4L, "CRITICAL");
                 triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Включено освещение для "+plant.getName()));
@@ -81,7 +87,8 @@ public class LogicEngine {
         if (telemetry.getHumidity() != null) {
             Integer minHumidity = getEffectiveHumMin(plant);
 
-            if (minHumidity != null && telemetry.getHumidity() < minHumidity) {
+            if (minHumidity != null && telemetry.getHumidity() < minHumidity
+                    && !eventService.existsPending(plant.getId(), "HUMIDIFYING")) {
                 hasProblem = true;
                 addRecommendation(plant, 2L, "CRITICAL");
                 triggeredEvents.add(createEvent(plant, "HUMIDIFYING", "Включен увлажнитель для "+plant.getName()));
@@ -89,11 +96,13 @@ public class LogicEngine {
         }
 
         List<Event> savedEvents = eventService.saveAll(triggeredEvents);
+
         for (Event event : savedEvents) {
             webSocketService.sendEvent(event);
 
             dispatchCommandFor(plant, event);
         }
+        System.out.println("savedEvents size = " + savedEvents.size());
 
         Integer newState = hasProblem ? 1 : 0;
         plant.setState(newState);
@@ -114,12 +123,15 @@ public class LogicEngine {
 
     private void dispatchCommandFor(PlantInstance plant, Event event) {
         Command command;
+        System.out.println("dispatchCommandFor called, event type = [" + event.getType() + "]");
+
         switch (event.getType()) {
             case "WATERING":
                 command = commandService.createCommand(plant, event, "WATERING");
                 break;
             case "HEATING":
                 command = commandService.createCommand(plant, event, "HEATING");
+                System.out.println("heating called for: " + plant.getName());
                 break;
             case "HUMIDIFYING":
                 command = commandService.createCommand(plant, event, "HUMIDIFYING");

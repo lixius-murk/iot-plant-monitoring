@@ -37,6 +37,8 @@ public class MockDeviceGateway {
                 break;
             case "HEATING":
                 dataSimulator.startHeating(command.getPlant().getId());
+                System.out.println("started for: " + command.getPlant().getName());
+
                 break;
 //            case "CURTAINS_OPEN":
 //                dataSimulator.startLight(command.getPlant().getId());

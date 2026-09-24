@@ -54,6 +54,8 @@ public class DataSimulator {
             newTemp = prevTemp.add(newTemp.subtract(prevTemp).multiply(BigDecimal.valueOf(0.3)));
         }
         if (state.heatingActive) {
+            System.out.println("Heating boost applied, plant=" + plant.getId() + ", timer left=" + state.heatingTimer);
+
             newTemp = newTemp.add(BigDecimal.valueOf(2));
             state.decHeatingTimer();
         }
