@@ -36,6 +36,10 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    public void resolveOpen(Long plantId, String type) {
+        eventRepository.resolveOpenByPlantAndType(plantId, type);
+    }
+
     public List<Event> saveAll(List<Event> events) {
         return eventRepository.saveAll(events);
     }

@@ -62,15 +62,19 @@ public class LogicEngine {
         }
 
         if (telemetry.getTemp() != null) {
-
             BigDecimal minTemp = getEffectiveTempMin(plant);
-            System.out.println("temp check: current=" + telemetry.getTemp() + " min=" + minTemp + " plant=" + plant.getName());
 
-            if (telemetry.getTemp().compareTo(minTemp) < 0
-                    && !eventService.existsPending(plant.getId(), "HEATING")) {
+            if (telemetry.getTemp().compareTo(minTemp) < 0) {
                 hasProblem = true;
-                addRecommendation(plant, 1L, "CRITICAL");
-                triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для "+plant.getName()));
+                addRecommendation(plant, 1L, "WARNING");
+                if (!eventService.existsPending(plant.getId(), "HEATING")) {
+                    System.out.println("creating event for: "+plant.getName());
+
+                    triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для " + plant.getName()));
+                }
+            } else {
+                System.out.println("Resoleving for: "+plant.getName());
+                eventService.resolveOpen(plant.getId(), "HEATING");
             }
         }
 
