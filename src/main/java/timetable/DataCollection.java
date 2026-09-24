@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import service.LogicEngine;
-import service.PlantService;
-import service.SensorService;
-import service.TelemetryService;
+import service.*;
 import simulator.DataSimulator;
 
 import java.util.List;
@@ -35,6 +32,12 @@ public class DataCollection {
         @Autowired
         private LogicEngine logicEngine;
 
+
+        //for telemetry updates
+        @Autowired(required = false)
+        private WebSocketService webSocketService;
+
+
         @Scheduled(fixedDelayString = "${app.simulation.interval-seconds:30}000")
         public void collectData() {
             List<PlantInstance> activePlants = plantService.getAllActive();
@@ -46,7 +49,9 @@ public class DataCollection {
                     Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensor);
 
                     telemetryService.save(telemetry);
-                    logicEngine.evaluate(telemetry, plant);
+                    webSocketService.sendTelemetry(telemetry);
+
+                    logicEngine.check(telemetry, plant);
                 }
             }
         }

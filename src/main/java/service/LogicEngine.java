@@ -38,10 +38,14 @@ public class LogicEngine {
     @Autowired
     private TelemetryService telemetryService;
 
+    //events and recs
+    @Autowired
+    private WebSocketService webSocketService;
+
     @Autowired
     private RecommendationMsgRepository recommendationMsgRepository;
 
-    public void evaluate(Telemetry telemetry, PlantInstance plant) {
+    public void check(Telemetry telemetry, PlantInstance plant) {
         List<Event> triggeredEvents = new ArrayList<>();
         boolean hasProblem = false;
 
@@ -77,6 +81,8 @@ public class LogicEngine {
 
         List<Event> savedEvents = eventService.saveAll(triggeredEvents);
         for (Event event : savedEvents) {
+            webSocketService.sendEvent(event);
+
             dispatchCommandFor(plant, event);
         }
 
@@ -93,6 +99,8 @@ public class LogicEngine {
 
         Recommendation rec = new Recommendation(plant, msg, severity);
         recommendationService.save(rec);
+        webSocketService.sendRecommendation(plant, rec);
+
     }
 
     private void dispatchCommandFor(PlantInstance plant, Event event) {

@@ -240,6 +240,57 @@
 
 <script>
     let currentPlantId = null;
+    let stompClient = null;
+    let plantSubscriptions = [];
+    let telemetrySubscription = null;
+
+    async function initWebSocket() {
+        try {
+            const response = await fetch('/api/plants');
+            const plants = await response.json();
+            connectWebSocket(plants.map(p => p.id));
+        } catch (error) {
+            console.error('Ошибка инициализации WebSocket:', error);
+        }
+    }
+
+    function connectWebSocket(plantIds) {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+        stompClient.connect({}, () => {
+            console.log('WebSocket подключен');
+            subscribeToPlants(plantIds);
+        });
+    }
+
+    function subscribeToPlants(plantIds) {
+        plantSubscriptions.forEach(sub => sub.unsubscribe());
+        plantSubscriptions = [];
+
+        plantIds.forEach(id => {
+            const eventsSub = stompClient.subscribe(`/topic/plants/${id}/events`, () => {
+                loadEvents();
+                loadStats();
+            });
+            const recsSub = stompClient.subscribe(`/topic/plants/${id}/recommendations`, () => {
+                loadRecommendations();
+                loadStats();
+            });
+            plantSubscriptions.push(eventsSub, recsSub);
+        });
+    }
+
+    function subscribeToTelemetry(plantId) {
+        if (!stompClient || !stompClient.connected) return;
+        if (telemetrySubscription) {
+            telemetrySubscription.unsubscribe();
+        }
+        telemetrySubscription = stompClient.subscribe(`/topic/plants/${plantId}/telemetry`, () => {
+            if (currentPlantId === plantId) loadPlantDetails(plantId);
+        });
+    }
+
 
     async function refreshAll() {
         await loadStats();
@@ -308,6 +359,7 @@
 
     async function loadPlantDetails(id) {
         currentPlantId = id;
+        subscribeToTelemetry(id);
         try {
             const [plantRes, telemetryRes, recsRes] = await Promise.all([
                 fetch(`/api/plants/${id}`),
@@ -385,7 +437,6 @@
         }
     }
 
-    // Загрузка рекомендаций
     async function loadRecommendations() {
         try {
             const response = await fetch('/api/dashboard/summary');
@@ -442,11 +493,22 @@
     function closeDetail() {
         document.getElementById('plantDetail').style.display = 'none';
         currentPlantId = null;
+        if (telemetrySubscription) {
+            telemetrySubscription.unsubscribe();
+            telemetrySubscription = null;
+        }
     }
 
+
+    //--------------------------
     setInterval(refreshAll, 30000);
 
     refreshAll();
+
+    initWebSocket();
+
 </script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </body>
 </html>
