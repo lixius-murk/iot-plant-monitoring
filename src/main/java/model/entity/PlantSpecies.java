@@ -19,8 +19,8 @@ public class PlantSpecies {
     private Integer soilMoistureMax = 80;
     private Integer lightMin = 1000;
     private Integer recommendedPotSize = 15;
-    private Integer humMin = 40;
-    private Integer humMax = 80;
+    private Integer airHumMin = 40;
+    private Integer airHumMax = 80;
 
     public PlantSpecies() {}
 
@@ -52,11 +52,11 @@ public class PlantSpecies {
     public Integer getRecommendedPotSize() { return recommendedPotSize; }
     public void setRecommendedPotSize(Integer recommendedPotSize) { this.recommendedPotSize = recommendedPotSize; }
 
-    public Integer getHumMin() { return humMin; }
-    public void setHumMin(Integer humMin) { this.humMin = humMin; }
+    public Integer getAirHumMin() { return airHumMin; }
+    public void setAirHumMin(Integer airHumMin) { this.airHumMin = airHumMin; }
 
-    public Integer getHumMax() { return humMax; }
-    public void setHumMax(Integer humMax) { this.humMax = humMax; }
+    public Integer getAirHumMax() { return airHumMax; }
+    public void setAirHumMax(Integer airHumMax) { this.airHumMax = airHumMax; }
 
     public Long getIdSpecies() { return id; }
 }

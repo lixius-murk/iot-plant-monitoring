@@ -54,8 +54,8 @@ public class LogicEngine {
 
             if (telemetry.getSoilMoisture() < minMoisture) {
                 hasProblem = true;
-                addRecommendation(plant, 3L, "WARNING");
-                triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив"));
+                addRecommendation(plant, 3L, "CRITICAL");
+                triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив для "+plant.getName()));
             }
         }
 
@@ -64,8 +64,8 @@ public class LogicEngine {
 
             if (telemetry.getTemp().compareTo(minTemp) < 0) {
                 hasProblem = true;
-                addRecommendation(plant, 1L, "WARNING");
-                triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев"));
+                addRecommendation(plant, 1L, "CRITICAL");
+                triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для "+plant.getName()));
             }
         }
 
@@ -74,8 +74,17 @@ public class LogicEngine {
 
             if (telemetry.getLight() < minLight) {
                 hasProblem = true;
-                addRecommendation(plant, 4L, "WARNING");
-                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Открыты шторы"));
+                addRecommendation(plant, 4L, "CRITICAL");
+                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Включено освещение для "+plant.getName()));
+            }
+        }
+        if (telemetry.getHumidity() != null) {
+            Integer minHumidity = getEffectiveHumMin(plant);
+
+            if (minHumidity != null && telemetry.getHumidity() < minHumidity) {
+                hasProblem = true;
+                addRecommendation(plant, 2L, "CRITICAL");
+                triggeredEvents.add(createEvent(plant, "HUMIDIFYING", "Включен увлажнитель для "+plant.getName()));
             }
         }
 
@@ -112,6 +121,9 @@ public class LogicEngine {
             case "HEATING":
                 command = commandService.createCommand(plant, event, "HEATING");
                 break;
+            case "HUMIDIFYING":
+                command = commandService.createCommand(plant, event, "HUMIDIFYING");
+                break;
             case "LIGHT_CONTROL":
                 command = commandService.createCommand(plant, event, "CURTAINS_OPEN");
                 break;
@@ -133,7 +145,7 @@ public class LogicEngine {
         return event;
     }
 
-    private int getEffectiveSoilMoistureMin(PlantInstance plant) {
+    private Integer getEffectiveSoilMoistureMin(PlantInstance plant) {
         return plant.getSoilMoistureMin() != null
                 ? plant.getSoilMoistureMin()
                 : plant.getSpecies().getSoilMoistureMin();
@@ -145,10 +157,15 @@ public class LogicEngine {
                 : plant.getSpecies().getTempMin();
     }
 
-    private int getEffectiveLightMin(PlantInstance plant) {
+    private Integer getEffectiveLightMin(PlantInstance plant) {
         return plant.getLightMin() != null
                 ? plant.getLightMin()
                 : plant.getSpecies().getLightMin();
+    }
+    private Integer getEffectiveHumMin(PlantInstance plant) {
+        return plant.getAirHumMin() != null
+                ? plant.getAirHumMin()
+                : plant.getSpecies().getAirHumMin();
     }
 
     @Scheduled(cron = "0 0 12 * * *")

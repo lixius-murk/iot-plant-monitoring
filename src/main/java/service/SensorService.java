@@ -11,8 +11,6 @@ import java.util.Random;
 @Service
 public class SensorService {
 
-    private final Random random = new Random();
-
     @Autowired(required = false)
     private SensorRepository sensorRepository;
 

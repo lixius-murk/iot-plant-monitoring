@@ -14,7 +14,7 @@ public class Event {
     @Column(name = "id_plant")
     private Long plantId;
 
-    private String type; // WATERING, HEATING, LIGHT_CONTROL
+    private String type; // WATERING, HEATING, LIGHT_CONTROL, HUMIDIFYING
     private String action;
     private LocalDateTime time;
 

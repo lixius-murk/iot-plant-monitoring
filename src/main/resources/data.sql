@@ -14,7 +14,7 @@ ALTER SEQUENCE sensors_id_seq RESTART WITH 1;
 ALTER SEQUENCE telemetry_id_seq RESTART WITH 1;
 ALTER SEQUENCE events_id_seq RESTART WITH 1;
 ALTER SEQUENCE recommendations_id_seq RESTART WITH 1;
-ALTER SEQUENCE recommendation_msg_id_seq RESTART WITH 1;   -- added
+ALTER SEQUENCE recommendation_msg_id_seq RESTART WITH 1;
 ALTER SEQUENCE plant_species_id_seq RESTART WITH 1;
 
 INSERT INTO plant_species (id, name, temp_min, temp_max, soil_moisture_min, soil_moisture_max, light_min, recommended_pot_size) VALUES
@@ -64,7 +64,7 @@ INSERT INTO telemetry (id, id_plant, id_sensor, temp, humidity, soil_moisture, l
                                                                                                              (3, 3, 11, 25.0, 35, 28, 1800, NOW() - INTERVAL '3 hours', 'SIMULATOR'),
                                                                                                              (4, 4, 16, 24.0, 65, 32, 1600, NOW() - INTERVAL '30 minutes', 'SIMULATOR');
 
-
+/*
 INSERT INTO recommendations (id, id_plant, msg_id, severity, resolved, created_at) VALUES
                                                                                         (1, 4, 1, 'CRITICAL', false, NOW() - INTERVAL '1 day'),
                                                                                         (2, 2, 1, 'CRITICAL', false, NOW() - INTERVAL '1 day'),
@@ -72,7 +72,7 @@ INSERT INTO recommendations (id, id_plant, msg_id, severity, resolved, created_a
                                                                                         (3, 2, 2, 'CRITICAL', false, NOW() - INTERVAL '2 days'),
                                                                                         (4, 3, 9, 'INFO', false, NOW() - INTERVAL '1 days');
 
-
+*/
 
 
 SELECT setval('plant_instances_id_seq', COALESCE((SELECT MAX(id) FROM plant_instances), 4));

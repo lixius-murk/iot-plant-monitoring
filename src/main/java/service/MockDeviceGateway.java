@@ -23,16 +23,27 @@ public class MockDeviceGateway {
     public void sendCommand(Command command) {
         try {
             // simulate latency
-            Thread.sleep(300 + random.nextInt(700));
+            Thread.sleep(200 );
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return;
         }
 
         commandService.acknowledge(command.getIdCommand());
-
-        if ("WATERING".equals(command.getCommandType())) {
-            dataSimulator.startWatering(command.getPlant().getId());
+        switch (command.getCommandType()) {
+            case "WATERING":
+                dataSimulator.startWatering(command.getPlant().getId());
+                break;
+            case "HEATING":
+                dataSimulator.startHeating(command.getPlant().getId());
+                break;
+//            case "CURTAINS_OPEN":
+//                dataSimulator.startLight(command.getPlant().getId());
+//                break;
+            case "HUMIDIFYING":
+                dataSimulator.startHumidifying(command.getPlant().getId());
+                break;
         }
     }
 }

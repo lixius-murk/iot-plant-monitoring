@@ -29,6 +29,8 @@ public class PlantInstance {
     //all custom pars
     private BigDecimal tempMin;
     private Integer soilMoistureMin;
+    private Integer airHumMin;
+
     private Integer lightMin;
 
     private LocalDateTime lastWatered;
@@ -93,5 +95,13 @@ public class PlantInstance {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Integer getAirHumMin() {
+        return airHumMin;
+    }
+
+    public void setAirHumMin(Integer airHumMin) {
+        this.airHumMin = airHumMin;
     }
 }

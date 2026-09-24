@@ -43,18 +43,19 @@ public class DataSimulator {
 
     private BigDecimal generateTemperature(PlantInstance plant, DeviceState state) {
         BigDecimal prevTemp = state.getLastTemperature();
-        BigDecimal min = getEffectiveTempMin(plant);
+        BigDecimal min = BigDecimal.valueOf(10);
         BigDecimal max = getEffectiveTempMax(plant);
 
-        LocalTime now = LocalTime.now();
-        double timeFactor = Math.sin((now.getHour() - 6) * Math.PI / 12);
-        BigDecimal baseTemp = min.add(max.subtract(min).multiply(BigDecimal.valueOf(0.5 + timeFactor * 0.3)));
-
-        BigDecimal randomDelta = BigDecimal.valueOf(random.nextDouble() * 3 - 1.5);
-        BigDecimal newTemp = baseTemp.add(randomDelta);
+        //LocalTime now = LocalTime.now();
+        //double timeFactor = Math.sin((now.getHour() - 6) * Math.PI / 12);
+        BigDecimal newTemp = min.add(max.subtract(min).multiply(BigDecimal.valueOf(0.5)));
 
         if (prevTemp != null) {
             newTemp = prevTemp.add(newTemp.subtract(prevTemp).multiply(BigDecimal.valueOf(0.3)));
+        }
+        if (state.heatingActive) {
+            newTemp = newTemp.add(BigDecimal.valueOf(2));
+            state.decHeatingTimer();
         }
 
         state.setLastTemperature(newTemp);
@@ -68,7 +69,13 @@ public class DataSimulator {
 
         int base = prevHum != null ? prevHum : (min + max) / 2;
         int delta = random.nextInt(20) - 10;
-        int newHum = Math.max(min, Math.min(max, base + delta));
+        int newHum = base + delta;
+
+        if (state.humActive) {
+            newHum = Math.min(newHum + 3, max);
+            state.decHumTimer();
+        }
+        newHum = Math.max(min, Math.min(max, base + delta));
 
         state.setLastHumidityAir(newHum);
         return newHum;
@@ -79,14 +86,14 @@ public class DataSimulator {
         Integer min = getEffectiveSoilMoistureMin(plant);
         Integer max = getEffectiveSoilMoistureMax(plant);
 
-        double evaporationRate = 0.98;
+        double evaporationRate = 1.5;
         int newMoisture = prevMoisture != null
                 ? (int)(prevMoisture * evaporationRate)
                 : (min + max) / 2;
 
-        if (state.isWateringActive()) {
-            newMoisture = Math.min(newMoisture + 40, max);
-            state.decrementWateringTimer();
+        if (state.wateringActive) {
+            newMoisture = Math.min(newMoisture + 20, max);
+            state.decWateringTimer();
         }
 
         newMoisture += random.nextInt(20) - 10;
@@ -105,8 +112,11 @@ public class DataSimulator {
         int maxLight = 1000;
         int avgLight = 180;
 
-
         int light = (int)(avgLight + random.nextDouble() * 0.4);
+//        if (state.lightActive()) {
+//            light += 800;
+//            state.decLightTimer();
+//        }
 
         return Math.min(maxLight, Math.max(50, light));
     }
@@ -131,6 +141,18 @@ public class DataSimulator {
     public void startWatering(Long plantId) {
         deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startWatering(20);
     }
+
+    public void startHeating(Long plantId) {
+        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startHeating(20);
+    }
+
+//    public void startLight(Long plantId) {
+//        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startLight(10);
+//    }
+
+    public void startHumidifying(Long plantId) {
+        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startHum(20);
+    }
     private int getEffectiveSoilMoistureMax(PlantInstance plant) {
         return plant.getSpecies().getSoilMoistureMax();
     }
@@ -141,28 +163,53 @@ public class DataSimulator {
         private Integer lastHumidityAir;
         private boolean wateringActive;
         private int wateringTimer;
+        private boolean heatingActive;
+        private int heatingTimer;
+        private boolean humActive;
+        private int humTimer;
 
         public BigDecimal getLastTemperature() { return lastTemperature; }
         public void setLastTemperature(BigDecimal lastTemperature) { this.lastTemperature = lastTemperature; }
-
         public Integer getLastSoilMoisture() { return lastSoilMoisture; }
         public void setLastSoilMoisture(Integer lastSoilMoisture) { this.lastSoilMoisture = lastSoilMoisture; }
-
         public Integer getLastHumidityAir() { return lastHumidityAir; }
         public void setLastHumidityAir(Integer lastHumidityAir) { this.lastHumidityAir = lastHumidityAir; }
 
 
-        public boolean isWateringActive() { return wateringActive; }
+        public boolean wateringActive() { return wateringActive; }
         public void setWateringActive(boolean wateringActive) { this.wateringActive = wateringActive; }
-
-        public void decrementWateringTimer() {
+        public void decWateringTimer() {
             if (wateringTimer > 0) wateringTimer--;
             if (wateringTimer == 0) wateringActive = false;
         }
-
         public void startWatering(int duration) {
             wateringActive = true;
             wateringTimer = duration;
         }
+
+        public boolean heatingActive() { return heatingActive; }
+        public void setHeatingActive(boolean heatingActive) { this.heatingActive = heatingActive; }
+        public void decHeatingTimer() {
+            if (heatingTimer > 0) heatingTimer--;
+            if (heatingTimer == 0) heatingActive = false;
+        }
+        public void startHeating(int duration) {
+            heatingActive = true;
+            heatingTimer = duration;
+        }
+
+        public boolean humActive() { return humActive; }
+        public void setHumActive(boolean humActive) { this.humActive = humActive; }
+        public void decHumTimer() {
+            if (humTimer > 0) humTimer--;
+            if (humTimer == 0) humActive = false;
+        }
+        public void startHum(int duration) {
+            humActive = true;
+            humTimer = duration;
+        }
+
+
     }
+
 }

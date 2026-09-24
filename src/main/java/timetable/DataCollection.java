@@ -4,6 +4,7 @@ import model.entity.PlantInstance;
 import model.entity.Sensor;
 import model.entity.Telemetry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -37,8 +38,9 @@ public class DataCollection {
         @Autowired(required = false)
         private WebSocketService webSocketService;
 
+    @Value("${app.simulation.interval-seconds}")
 
-        @Scheduled(fixedDelayString = "${app.simulation.interval-seconds:30}000")
+    @Scheduled(fixedDelayString = "${app.simulation.interval-seconds}")
         public void collectData() {
             List<PlantInstance> activePlants = plantService.getAllActive();
 
