@@ -49,7 +49,7 @@ public interface PlantInstanceRepository extends JpaRepository<PlantInstance, Lo
     @Query("SELECT COUNT(p) FROM PlantInstance p WHERE p.active = true")
     long countByIsActiveTrue();
     @Query("SELECT p FROM PlantInstance p WHERE p.active = true")
-    List<PlantInstance> findByIsActiveTrue();
+    List<PlantInstance> findByIsActiveTrueOrderByIdAsc();
 
 
     @Modifying
