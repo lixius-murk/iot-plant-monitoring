@@ -72,20 +72,22 @@ public class DataSimulator {
         Integer prevHum = state.getLastHumidityAir();
         int min = 30;
         int max = 80;
+        int target = (min + max) / 2;
 
-        int base = prevHum != null ? prevHum : (min + max) / 2;
-        int delta = random.nextInt(20) - 10;
+        int newHum = prevHum != null
+                ? prevHum + (target - prevHum) / 4 + random.nextInt(11) - 5
+                : target + random.nextInt(11) - 5;
 
-        if (random.nextInt(10) == 0) {
-            base = Math.max(10, min - random.nextInt(10) - 1);
+        if (random.nextInt(20) == 0) {
+            newHum = min - 1 - random.nextInt(10);
         }
-        int newHum = base + delta;
 
         if (state.humActive) {
-            newHum = Math.min(newHum + 3, max);
+            newHum = Math.min(newHum + 10, max);
             state.decHumTimer();
         }
-        newHum = Math.max(min, Math.min(max, base + delta));
+
+        newHum = Math.max(0, Math.min(100, newHum));
 
         state.setLastHumidityAir(newHum);
         return newHum;
@@ -95,24 +97,22 @@ public class DataSimulator {
         Integer prevMoisture = state.getLastSoilMoisture();
         Integer min = getEffectiveSoilMoistureMin(plant);
         Integer max = getEffectiveSoilMoistureMax(plant);
+        int target = (min + max) / 2;
 
-        double evaporationRate = 0.95;
         int newMoisture = prevMoisture != null
-                ? (int)(prevMoisture * evaporationRate)
-                : (min + max) / 2;
+                ? prevMoisture + (target - prevMoisture) / 4 + random.nextInt(11) - 5
+                : target + random.nextInt(11) - 5;
+
+        if (random.nextInt(20) == 0) {
+            newMoisture = min - 1 - random.nextInt(10);
+        }
 
         if (state.wateringActive) {
-            newMoisture = Math.min(newMoisture + 20, max);
+            newMoisture = Math.min(newMoisture + 15, max);
             state.decWateringTimer();
         }
 
-        newMoisture += random.nextInt(20) - 10;
-
-        if (random.nextInt(10) == 0) {
-            newMoisture = min - random.nextInt(10) - 1;
-        }
-
-        newMoisture = Math.min(max, newMoisture);
+        newMoisture = Math.max(0, Math.min(100, newMoisture));
 
         state.setLastSoilMoisture(newMoisture);
         return newMoisture;
