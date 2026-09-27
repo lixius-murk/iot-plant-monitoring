@@ -14,8 +14,6 @@ public class RecommendationService {
     @Autowired
     private RecommendationRepository recommendationRepository;
     @Autowired
-    private EventService eventService;
-    @Autowired
     private WebSocketService webSocketService;
 
     public long countUnresolved() {
@@ -41,9 +39,6 @@ public class RecommendationService {
         recommendationRepository.resolve(recId);
 
         if (rec != null) {
-            if (rec.getEvent() != null) {
-                eventService.markResolved(rec.getEvent().getId());
-            }
             webSocketService.sendRecommendation(rec.getPlant(), rec);
             System.out.println("sent recommendation resolve");
         }

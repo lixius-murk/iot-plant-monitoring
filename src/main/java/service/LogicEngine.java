@@ -38,6 +38,9 @@ public class LogicEngine {
     @Autowired
     private TelemetryService telemetryService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
 
     @Autowired
     private RecommendationMsgRepository recommendationMsgRepository;
@@ -150,15 +153,6 @@ public class LogicEngine {
         List<Event> savedEvents = eventService.saveAll(triggeredEvents);
         for (Event event : savedEvents) {
             webSocketService.sendEvent(event);
-
-            Recommendation rec = new Recommendation();
-            rec.setPlant(plant);
-            rec.setEvent(event);
-            rec.setMessage(new RecommendationMsg(event.getAction()));
-            rec.setSeverity("CRITICAL");
-            recommendationService.save(rec);
-            webSocketService.sendRecommendation(plant, rec);
-
             dispatchCommandFor(plant, event);
         }
 
@@ -245,27 +239,22 @@ public class LogicEngine {
         if (repotMsg == null) return;
         List<PlantInstance> plants = plantService.getAllActive();
         for (PlantInstance plant : plants) {
-            Telemetry latestTelemetry = telemetryService.getLatestByPlant(plant.getId()).orElse(null);
-            if (latestTelemetry != null && latestTelemetry.getSoilMoisture() != null) {
-                if (plant.getHeight() != null && plant.getPotSize() != null){
-                    BigDecimal currentHeight = plant.getHeight();
-                    BigDecimal potSize = BigDecimal.valueOf(plant.getPotSize());
-                    BigDecimal recommendedSize = plant.getSpecies().getRecommendedPotSize() != null
-                            ? BigDecimal.valueOf(plant.getSpecies().getRecommendedPotSize()) : BigDecimal.valueOf(40);
-                    if (currentHeight.compareTo(potSize.multiply(BigDecimal.valueOf(0.9))) > 0) {
-                        Recommendation rec = new Recommendation();
-                        rec.setPlant(plant);
-                        rec.setMessage(repotMsg);
-                        rec.setSeverity("INFO");
-                        rec.setCreatedAt(LocalDateTime.now());
-                        rec.setResolved(false);
-                        recommendationService.save(rec);
-                    }
+            if (plant.getHeight() != null && plant.getPotSize() != null
+                    && !recommendationService.existsUnresolved(plant.getId(), repotMsg.getId())) {
+                BigDecimal currentHeight = plant.getHeight();
+                BigDecimal potSize = BigDecimal.valueOf(plant.getPotSize());
 
-
-                };
-
-            };
+                if (currentHeight.compareTo(potSize.multiply(BigDecimal.valueOf(0.9))) > 0) {
+                    Recommendation rec = new Recommendation();
+                    rec.setPlant(plant);
+                    rec.setMessage(repotMsg);
+                    rec.setSeverity("INFO");
+                    rec.setCreatedAt(LocalDateTime.now());
+                    rec.setResolved(false);
+                    recommendationService.save(rec);
+                    webSocketService.sendRecommendation(plant, rec);
+                }
+            }
         }
     }
 }
