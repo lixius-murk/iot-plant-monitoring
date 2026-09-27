@@ -22,6 +22,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     List<Recommendation> findByResolvedFalseOrderByCreatedAtAsc();
 
 
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Recommendation r " +
+            "WHERE r.plant.id = :plantId AND r.message.id = :msgId " +
+            "AND r.resolvedAt IS NOT NULL AND r.resolvedAt > :since")
+    boolean existsRecentlyResolved(@Param("plantId") Long plantId, @Param("msgId") Long msgId, @Param("since") LocalDateTime since);
+
+
     @Query("SELECT r FROM Recommendation r WHERE r.resolved = false " +
             "AND r.severity IN ('WARNING', 'CRITICAL') " +
             "ORDER BY r.severity DESC, r.createdAt ASC")

@@ -13,6 +13,10 @@ public class RecommendationService {
 
     @Autowired
     private RecommendationRepository recommendationRepository;
+    @Autowired
+    private EventService eventService;
+    @Autowired
+    private WebSocketService webSocketService;
 
     public long countUnresolved() {
         return recommendationRepository.countByResolvedFalse();
@@ -20,6 +24,9 @@ public class RecommendationService {
 
     public boolean existsUnresolved(Long plantId, Long msgId) {
         return recommendationRepository.existsByPlant_IdAndMessage_IdAndResolvedFalse(plantId, msgId);
+    }
+    public boolean wasRecentlyResolved(Long plantId, Long msgId, int cooldownMinutes) {
+        return recommendationRepository.existsRecentlyResolved(plantId, msgId, LocalDateTime.now().minusMinutes(cooldownMinutes));
     }
     public List<Object[]> getUnresolved() {
         return recommendationRepository.getUnresolved();
@@ -30,7 +37,17 @@ public class RecommendationService {
     }
 
     public void resolve(Long recId) {
+        Recommendation rec = recommendationRepository.findById(recId).orElse(null);
         recommendationRepository.resolve(recId);
+
+        if (rec != null) {
+            if (rec.getEvent() != null) {
+                eventService.markResolved(rec.getEvent().getId());
+            }
+            webSocketService.sendRecommendation(rec.getPlant(), rec);
+            System.out.println("sent recommendation resolve");
+        }
+
     }
 
     public List<Recommendation> getByPlant(Long plantId) {

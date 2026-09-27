@@ -21,6 +21,14 @@ public class Recommendation {
     @JoinColumn(name = "msg_id")
     private RecommendationMsg message;
 
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+
+    public Event getEvent() { return event; }
+    public void setEvent(Event event) { this.event = event; }
+
     //CRITICAL, INFO
     private String severity;
     private Boolean resolved = false;

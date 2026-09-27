@@ -40,6 +40,10 @@ public class EventService {
         eventRepository.resolveOpenByPlantAndType(plantId, type);
     }
 
+    public boolean hasOpenEvent(Long plantId, String type) {
+        return eventRepository.existsOpenEvent(plantId, type);
+    }
+
     public List<Event> saveAll(List<Event> events) {
         return eventRepository.saveAll(events);
     }

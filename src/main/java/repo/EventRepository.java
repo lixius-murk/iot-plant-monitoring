@@ -23,6 +23,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     boolean existsByPlantIdAndTypeAndStatusIn(Long plantId, String type, List<Integer> statuses);
 
 
+    @Query("SELECT CASE WHEN COUNT(e) > 0 THEN true ELSE false END FROM Event e " +
+            "WHERE e.plantId = :plantId AND e.type = :type AND e.status <> 2")
+    boolean existsOpenEvent(@Param("plantId") Long plantId, @Param("type") String type);
+
     @Modifying
     @Transactional
     @Query("UPDATE Event e SET e.status = 2 WHERE e.plantId = :plantId AND e.type = :type AND e.status IN (0, 1)")

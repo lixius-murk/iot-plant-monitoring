@@ -33,8 +33,6 @@ public class DataCollection {
         @Autowired
         private LogicEngine logicEngine;
 
-
-        //for telemetry updates
         @Autowired(required = false)
         private WebSocketService webSocketService;
 
@@ -53,7 +51,7 @@ public class DataCollection {
                     telemetryService.save(telemetry);
                     webSocketService.sendTelemetry(telemetry);
 
-                    logicEngine.check(telemetry, plant);
+                    logicEngine.check(telemetry, plant, webSocketService);
                 }
             }
         }

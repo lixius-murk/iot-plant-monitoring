@@ -38,82 +38,137 @@ public class LogicEngine {
     @Autowired
     private TelemetryService telemetryService;
 
-    //events and recs
-    @Autowired
-    private WebSocketService webSocketService;
 
     @Autowired
     private RecommendationMsgRepository recommendationMsgRepository;
 
-    public void check(Telemetry telemetry, PlantInstance plant) {
+//    public void check(Telemetry telemetry, PlantInstance plant) {
+//        List<Event> triggeredEvents = new ArrayList<>();
+//        boolean hasProblem = false;
+//
+//        if (telemetry.getSoilMoisture() != null) {
+//            int minMoisture = getEffectiveSoilMoistureMin(plant);
+//
+//            if (telemetry.getSoilMoisture() < minMoisture
+//                    && !eventService.existsPending(plant.getId(), "WATERING")) {
+//
+//                hasProblem = true;
+//                addRecommendation(plant, 3L, "CRITICAL");
+//                triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив для "+plant.getName()));
+//            }
+//        }
+//
+//        if (telemetry.getTemp() != null) {
+//            BigDecimal minTemp = getEffectiveTempMin(plant);
+//
+//            if (telemetry.getTemp().compareTo(minTemp) < 0) {
+//                hasProblem = true;
+//                addRecommendation(plant, 1L, "WARNING");
+//                if (!eventService.existsPending(plant.getId(), "HEATING")) {
+//                    System.out.println("creating event for: "+plant.getName());
+//
+//                    triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для " + plant.getName()));
+//                }
+//            } else {
+//                System.out.println("Resoleving for: "+plant.getName());
+//                eventService.resolveOpen(plant.getId(), "HEATING");
+//            }
+//        }
+//
+//        if (telemetry.getLight() != null) {
+//            int minLight = getEffectiveLightMin(plant);
+//
+//            if (telemetry.getLight() < minLight
+//                    && !eventService.existsPending(plant.getId(), "LIGHT_CONTROL")) {
+//                hasProblem = true;
+//                addRecommendation(plant, 4L, "CRITICAL");
+//                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Включено освещение для "+plant.getName()));
+//            }
+//        }
+//        if (telemetry.getHumidity() != null) {
+//            Integer minHumidity = getEffectiveHumMin(plant);
+//
+//            if (minHumidity != null && telemetry.getHumidity() < minHumidity
+//                    && !eventService.existsPending(plant.getId(), "HUMIDIFYING")) {
+//                hasProblem = true;
+//                addRecommendation(plant, 2L, "CRITICAL");
+//                triggeredEvents.add(createEvent(plant, "HUMIDIFYING", "Включен увлажнитель для "+plant.getName()));
+//            }
+//        }
+//
+//        List<Event> savedEvents = eventService.saveAll(triggeredEvents);
+//
+//        for (Event event : savedEvents) {
+//            webSocketService.sendEvent(event);
+//
+//            dispatchCommandFor(plant, event);
+//        }
+//        System.out.println("savedEvents size = " + savedEvents.size());
+//
+//        Integer newState = hasProblem ? 1 : 0;
+//        plant.setState(newState);
+//        plantService.updateState(plant.getId(), newState);
+//    }
+
+
+    public void check(Telemetry telemetry, PlantInstance plant, WebSocketService webSocketService) {
         List<Event> triggeredEvents = new ArrayList<>();
-        boolean hasProblem = false;
 
         if (telemetry.getSoilMoisture() != null) {
             int minMoisture = getEffectiveSoilMoistureMin(plant);
-
             if (telemetry.getSoilMoisture() < minMoisture
-                    && !eventService.existsPending(plant.getId(), "WATERING")) {
+                    && !eventService.hasOpenEvent(plant.getId(), "WATERING")) {
+                triggeredEvents.add(createEvent(plant, "WATERING",
+                        "Низкая влажность почвы: " + telemetry.getSoilMoisture() + "%"));
+                System.out.println("trigger for hum");
 
-                hasProblem = true;
-                addRecommendation(plant, 3L, "CRITICAL");
-                triggeredEvents.add(createEvent(plant, "WATERING", "Автоматический полив для "+plant.getName()));
             }
         }
 
         if (telemetry.getTemp() != null) {
             BigDecimal minTemp = getEffectiveTempMin(plant);
+            if (telemetry.getTemp().compareTo(minTemp) < 0
+                    && !eventService.hasOpenEvent(plant.getId(), "HEATING")) {
+                triggeredEvents.add(createEvent(plant, "HEATING",
+                        "Низкая температура: " + telemetry.getTemp() + "°C"));
+                System.out.println("trigger for temp");
 
-            if (telemetry.getTemp().compareTo(minTemp) < 0) {
-                hasProblem = true;
-                addRecommendation(plant, 1L, "WARNING");
-                if (!eventService.existsPending(plant.getId(), "HEATING")) {
-                    System.out.println("creating event for: "+plant.getName());
-
-                    triggeredEvents.add(createEvent(plant, "HEATING", "Включен обогрев для " + plant.getName()));
-                }
-            } else {
-                System.out.println("Resoleving for: "+plant.getName());
-                eventService.resolveOpen(plant.getId(), "HEATING");
             }
         }
 
         if (telemetry.getLight() != null) {
             int minLight = getEffectiveLightMin(plant);
-
             if (telemetry.getLight() < minLight
-                    && !eventService.existsPending(plant.getId(), "LIGHT_CONTROL")) {
-                hasProblem = true;
-                addRecommendation(plant, 4L, "CRITICAL");
-                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL", "Включено освещение для "+plant.getName()));
-            }
-        }
-        if (telemetry.getHumidity() != null) {
-            Integer minHumidity = getEffectiveHumMin(plant);
+                    && !eventService.hasOpenEvent(plant.getId(), "LIGHT_CONTROL")) {
+                triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL",
+                        "Недостаточно света: " + telemetry.getLight() + " lux"));
+                System.out.println("trigger for light");
 
-            if (minHumidity != null && telemetry.getHumidity() < minHumidity
-                    && !eventService.existsPending(plant.getId(), "HUMIDIFYING")) {
-                hasProblem = true;
-                addRecommendation(plant, 2L, "CRITICAL");
-                triggeredEvents.add(createEvent(plant, "HUMIDIFYING", "Включен увлажнитель для "+plant.getName()));
             }
         }
 
         List<Event> savedEvents = eventService.saveAll(triggeredEvents);
-
         for (Event event : savedEvents) {
             webSocketService.sendEvent(event);
 
+            Recommendation rec = new Recommendation();
+            rec.setPlant(plant);
+            rec.setEvent(event);
+            rec.setMessage(new RecommendationMsg(event.getAction()));
+            rec.setSeverity("CRITICAL");
+            recommendationService.save(rec);
+            webSocketService.sendRecommendation(plant, rec);
+
             dispatchCommandFor(plant, event);
         }
-        System.out.println("savedEvents size = " + savedEvents.size());
 
-        Integer newState = hasProblem ? 1 : 0;
+        Integer newState = savedEvents.isEmpty() ? 0 : 1;
         plant.setState(newState);
         plantService.updateState(plant.getId(), newState);
     }
 
-    private void addRecommendation(PlantInstance plant, Long msgId, String severity) {
+
+    private void addRecommendation(PlantInstance plant, Long msgId, String severity, WebSocketService webSocketService) {
         if (recommendationService.existsUnresolved(plant.getId(), msgId)) return;
 
         RecommendationMsg msg = recommendationMsgRepository.findById(msgId).orElse(null);
