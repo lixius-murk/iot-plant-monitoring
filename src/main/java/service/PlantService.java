@@ -24,20 +24,14 @@ public class PlantService {
         return plantRepository.countByState(state);
     }
 
-    public long countByHealthStatus(String healthStatus) {
-        if ("HEALTHY".equals(healthStatus)) {
-            return plantRepository.countByState(0);
-        } else {
-            return plantRepository.countByState(1);
-        }
-    }
+
 
     public List<PlantInstance> getAllPlants() {
         return plantRepository.findAll();
     }
 
     public List<PlantInstance> getAllActive() {
-        return plantRepository.findByIsActiveTrue();
+        return plantRepository.findByActiveTrueOrderByIdAsc();
     }
 
     public PlantInstance getPlantById(Long id) {

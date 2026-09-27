@@ -48,8 +48,9 @@ public interface PlantInstanceRepository extends JpaRepository<PlantInstance, Lo
 
     @Query("SELECT COUNT(p) FROM PlantInstance p WHERE p.active = true")
     long countByIsActiveTrue();
-    @Query("SELECT p FROM PlantInstance p WHERE p.active = true")
-    List<PlantInstance> findByIsActiveTrue();
+
+
+    List<PlantInstance> findByActiveTrueOrderByIdAsc();
 
 
     @Modifying
@@ -79,7 +80,6 @@ public interface PlantInstanceRepository extends JpaRepository<PlantInstance, Lo
     @Query("SELECT p FROM PlantInstance p WHERE p.active = true ORDER BY p.height DESC LIMIT 1")
     Optional<PlantInstance> findTallestPlant();
 
-    Page<PlantInstance> findByActiveTrue(Pageable pageable);
 
     Page<PlantInstance> findByState(Integer state, Pageable pageable);
 }

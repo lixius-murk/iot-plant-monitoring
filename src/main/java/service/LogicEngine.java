@@ -122,7 +122,7 @@ public class LogicEngine {
             if (telemetry.getSoilMoisture() < minMoisture
                     && !eventService.hasOpenEvent(plant.getId(), "WATERING")) {
                 triggeredEvents.add(createEvent(plant, "WATERING",
-                        "Низкая влажность почвы: " + plant.getName()));
+                        "Низкая влажность почвы: " + telemetry.getSoilMoisture() + "%"));
                 System.out.println("trigger for hum");
 
             }
@@ -133,7 +133,7 @@ public class LogicEngine {
             if (telemetry.getTemp().compareTo(minTemp) < 0
                     && !eventService.hasOpenEvent(plant.getId(), "HEATING")) {
                 triggeredEvents.add(createEvent(plant, "HEATING",
-                        "Низкая температура: " + plant.getName()));
+                        "Низкая температура: " + telemetry.getTemp() + "°C"));
                 System.out.println("trigger for temp");
 
             }
@@ -144,7 +144,7 @@ public class LogicEngine {
             if (telemetry.getLight() < minLight
                     && !eventService.hasOpenEvent(plant.getId(), "LIGHT_CONTROL")) {
                 triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL",
-                        "Недостаточно света: " + plant.getName()));
+                        "Недостаточно света: " + telemetry.getLight() + " lux"));
                 System.out.println("trigger for light");
 
             }
@@ -156,7 +156,7 @@ public class LogicEngine {
                     && telemetry.getHumidity() < minHumidity
                     && !eventService.hasOpenEvent(plant.getId(), "HUMIDIFYING")) {
                 triggeredEvents.add(createEvent(plant, "HUMIDIFYING",
-                        "Низкая влажность воздуха: " + plant.getName()));
+                        "Низкая влажность воздуха: " + telemetry.getHumidity() + "%"));
                 System.out.println("trigger for humidity");
             }
         }
@@ -192,6 +192,8 @@ public class LogicEngine {
         switch (event.getType()) {
             case "WATERING":
                 command = commandService.createCommand(plant, event, "WATERING");
+                System.out.println("wattering called for: " + plant.getName());
+
                 break;
             case "HEATING":
                 command = commandService.createCommand(plant, event, "HEATING");
@@ -199,9 +201,13 @@ public class LogicEngine {
                 break;
             case "HUMIDIFYING":
                 command = commandService.createCommand(plant, event, "HUMIDIFYING");
+                System.out.println("hum called for: " + plant.getName());
+
                 break;
             case "LIGHT_CONTROL":
-                command = commandService.createCommand(plant, event, "LIGHT_CONTROL");
+                command = commandService.createCommand(plant, event, "CURTAINS_OPEN");
+                System.out.println("light called for: " + plant.getName());
+
                 break;
             default:
                 return;
