@@ -116,10 +116,10 @@ public class LogicEngine {
 
     public void check(Telemetry telemetry, PlantInstance plant, WebSocketService webSocketService) {
         List<Event> triggeredEvents = new ArrayList<>();
+        int minMoisture = getEffectiveSoilMoistureMin(plant);
+        plant.setState(0);
 
         if (telemetry.getSoilMoisture() != null) {
-            int minMoisture = getEffectiveSoilMoistureMin(plant);
-            plant.setState(0);
 
             if (telemetry.getSoilMoisture() < minMoisture
                     && !eventService.hasOpenEvent(plant.getId(), "WATERING")) {
@@ -128,12 +128,13 @@ public class LogicEngine {
                 plant.setState(1);
                 System.out.println("trigger for hum");
 
+            } else if (telemetry.getSoilMoisture() >= minMoisture) {
+                eventService.resolveOpen(plant.getId(), "WATERING");
             }
         }
 
         if (telemetry.getTemp() != null) {
             BigDecimal minTemp = getEffectiveTempMin(plant);
-            plant.setState(0);
 
             if (telemetry.getTemp().compareTo(minTemp) < 0
                     && !eventService.hasOpenEvent(plant.getId(), "HEATING")) {
@@ -144,7 +145,11 @@ public class LogicEngine {
                 System.out.println("trigger for temp");
 
             }
-        }
+            else if (telemetry.getTemp().compareTo(minTemp) >= 0) {
+                eventService.resolveOpen(plant.getId(), "HEATING");
+
+            }
+            }
 
         if (telemetry.getLight() != null) {
             int minLight = getEffectiveLightMin(plant);
@@ -157,6 +162,9 @@ public class LogicEngine {
                 plant.setState(1);
 
                 System.out.println("trigger for light");
+            }
+            else if (telemetry.getLight() >= minLight) {
+                eventService.resolveOpen(plant.getId(), "LIGHT_CONTROL");
 
             }
         }
@@ -173,6 +181,9 @@ public class LogicEngine {
                 plant.setState(1);
 
                 System.out.println("trigger for humidity");
+            }
+            else if (minHumidity != null && telemetry.getHumidity() >= minHumidity) {
+                eventService.resolveOpen(plant.getId(), "HUMIDIFYING");
             }
         }
 

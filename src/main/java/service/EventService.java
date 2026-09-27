@@ -39,7 +39,6 @@ public class EventService {
     public void resolveOpen(Long plantId, String type) {
         eventRepository.resolveOpenByPlantAndType(plantId, type);
     }
-
     public boolean hasOpenEvent(Long plantId, String type) {
         return eventRepository.existsOpenEvent(plantId, type);
     }

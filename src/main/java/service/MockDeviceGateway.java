@@ -30,7 +30,6 @@ public class MockDeviceGateway {
 //            return;
 //        }
 
-        commandService.acknowledge(command.getIdCommand());
         switch (command.getCommandType()) {
             case "WATERING":
                 dataSimulator.startWatering(command.getPlant().getId());
@@ -49,5 +48,7 @@ public class MockDeviceGateway {
                 System.out.println("command started hum for: " + command.getPlant().getName());
                 break;
         }
+        commandService.acknowledge(command.getIdCommand());
+
     }
 }

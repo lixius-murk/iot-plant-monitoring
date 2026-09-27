@@ -27,11 +27,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "WHERE e.plantId = :plantId AND e.type = :type AND e.status <> 2")
     boolean existsOpenEvent(@Param("plantId") Long plantId, @Param("type") String type);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Event e SET e.status = 2 WHERE e.plantId = :plantId AND e.type = :type AND e.status IN (0, 1)")
-    int resolveOpenByPlantAndType(@Param("plantId") Long plantId, @Param("type") String type);
-
     @Query("SELECT e FROM Event e ORDER BY e.time DESC LIMIT 20")
     List<Event> findLast20Events();
 
@@ -47,6 +42,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Transactional
     @Query("UPDATE Event e SET e.status = 1 WHERE e.id = :id")
     int markCommandSent(@Param("id") Long id);
+
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Event e SET e.status = 2 WHERE e.plantId = :plantId AND e.type = :type AND e.status <> 2")
+    int resolveOpenByPlantAndType(@Param("plantId") Long plantId, @Param("type") String type);
 
     @Modifying
     @Transactional
