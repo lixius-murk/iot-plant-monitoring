@@ -150,6 +150,17 @@ public class LogicEngine {
             }
         }
 
+        if (telemetry.getHumidity() != null) {
+            Integer minHumidity = getEffectiveHumMin(plant);
+            if (minHumidity != null
+                    && telemetry.getHumidity() < minHumidity
+                    && !eventService.hasOpenEvent(plant.getId(), "HUMIDIFYING")) {
+                triggeredEvents.add(createEvent(plant, "HUMIDIFYING",
+                        "Низкая влажность воздуха: " + telemetry.getHumidity() + "%"));
+                System.out.println("trigger for humidity");
+            }
+        }
+
         List<Event> savedEvents = eventService.saveAll(triggeredEvents);
         for (Event event : savedEvents) {
             webSocketService.sendEvent(event);
