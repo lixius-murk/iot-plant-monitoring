@@ -50,6 +50,10 @@ public class DataSimulator {
         //double timeFactor = Math.sin((now.getHour() - 6) * Math.PI / 12);
         BigDecimal newTemp = min.add(max.subtract(min).multiply(BigDecimal.valueOf(0.5)));
 
+        if (random.nextInt(10) == 0) {
+            newTemp = min.subtract(BigDecimal.valueOf(1 + random.nextInt(3)));
+        }
+
         if (prevTemp != null) {
             newTemp = prevTemp.add(newTemp.subtract(prevTemp).multiply(BigDecimal.valueOf(0.3)));
         }
@@ -71,6 +75,10 @@ public class DataSimulator {
 
         int base = prevHum != null ? prevHum : (min + max) / 2;
         int delta = random.nextInt(20) - 10;
+
+        if (random.nextInt(10) == 0) {
+            base = Math.max(10, min - random.nextInt(10) - 1);
+        }
         int newHum = base + delta;
 
         if (state.humActive) {
@@ -88,7 +96,7 @@ public class DataSimulator {
         Integer min = getEffectiveSoilMoistureMin(plant);
         Integer max = getEffectiveSoilMoistureMax(plant);
 
-        double evaporationRate = 1.5;
+        double evaporationRate = 0.95;
         int newMoisture = prevMoisture != null
                 ? (int)(prevMoisture * evaporationRate)
                 : (min + max) / 2;
@@ -99,7 +107,12 @@ public class DataSimulator {
         }
 
         newMoisture += random.nextInt(20) - 10;
-        newMoisture = Math.max(min, Math.min(max, newMoisture));
+
+        if (random.nextInt(10) == 0) {
+            newMoisture = min - random.nextInt(10) - 1;
+        }
+
+        newMoisture = Math.min(max, newMoisture);
 
         state.setLastSoilMoisture(newMoisture);
         return newMoisture;
@@ -114,7 +127,11 @@ public class DataSimulator {
         int maxLight = 1000;
         int avgLight = 180;
 
-        int light = (int)(avgLight + random.nextDouble() * 0.4);
+        int light = (int)(avgLight + random.nextDouble() * 40);
+
+        if (random.nextInt(10) == 0) {
+            light = 30 + random.nextInt(40);
+        }
 //        if (state.lightActive()) {
 //            light += 800;
 //            state.decLightTimer();
