@@ -17,7 +17,6 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     boolean existsByPlant_IdAndMessage_IdAndResolvedFalse(Long plantId, Long messageId);
 
     @Query("SELECT r FROM Recommendation r WHERE r.resolved = false " +
-            "AND r.severity IN ('WARNING', 'CRITICAL') " +
             "ORDER BY r.severity DESC, r.createdAt ASC")
     List<Recommendation> findByResolvedFalseOrderByCreatedAtAsc();
 
