@@ -119,10 +119,13 @@ public class LogicEngine {
 
         if (telemetry.getSoilMoisture() != null) {
             int minMoisture = getEffectiveSoilMoistureMin(plant);
+            plant.setState(0);
+
             if (telemetry.getSoilMoisture() < minMoisture
                     && !eventService.hasOpenEvent(plant.getId(), "WATERING")) {
                 triggeredEvents.add(createEvent(plant, "WATERING",
-                        "Низкая влажность почвы: " + telemetry.getSoilMoisture() + "%"));
+                        "Низкая влажность почвы: " + plant.getName()));
+                plant.setState(1);
                 System.out.println("trigger for hum");
 
             }
@@ -130,10 +133,14 @@ public class LogicEngine {
 
         if (telemetry.getTemp() != null) {
             BigDecimal minTemp = getEffectiveTempMin(plant);
+            plant.setState(0);
+
             if (telemetry.getTemp().compareTo(minTemp) < 0
                     && !eventService.hasOpenEvent(plant.getId(), "HEATING")) {
                 triggeredEvents.add(createEvent(plant, "HEATING",
-                        "Низкая температура: " + telemetry.getTemp() + "°C"));
+                        "Низкая температура: " + plant.getName()));
+                plant.setState(1);
+
                 System.out.println("trigger for temp");
 
             }
@@ -141,10 +148,14 @@ public class LogicEngine {
 
         if (telemetry.getLight() != null) {
             int minLight = getEffectiveLightMin(plant);
+            plant.setState(0);
+
             if (telemetry.getLight() < minLight
                     && !eventService.hasOpenEvent(plant.getId(), "LIGHT_CONTROL")) {
                 triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL",
-                        "Недостаточно света: " + telemetry.getLight() + " lux"));
+                        "Недостаточно света: " + plant.getName()));
+                plant.setState(1);
+
                 System.out.println("trigger for light");
 
             }
@@ -152,11 +163,15 @@ public class LogicEngine {
 
         if (telemetry.getHumidity() != null) {
             Integer minHumidity = getEffectiveHumMin(plant);
+            plant.setState(0);
+
             if (minHumidity != null
                     && telemetry.getHumidity() < minHumidity
                     && !eventService.hasOpenEvent(plant.getId(), "HUMIDIFYING")) {
                 triggeredEvents.add(createEvent(plant, "HUMIDIFYING",
-                        "Низкая влажность воздуха: " + telemetry.getHumidity() + "%"));
+                        "Низкая влажность воздуха: " + plant.getName()));
+                plant.setState(1);
+
                 System.out.println("trigger for humidity");
             }
         }

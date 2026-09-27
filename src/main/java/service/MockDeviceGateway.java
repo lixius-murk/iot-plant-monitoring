@@ -21,14 +21,14 @@ public class MockDeviceGateway {
 
     @Async
     public void sendCommand(Command command) {
-        try {
-            // simulate latency
-            Thread.sleep(20 );
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return;
-        }
+//        try {
+//            // simulate latency
+//            Thread.sleep(20 );
+//
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//            return;
+//        }
 
         commandService.acknowledge(command.getIdCommand());
         switch (command.getCommandType()) {
