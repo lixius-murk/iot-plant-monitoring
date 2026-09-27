@@ -23,7 +23,7 @@ public class MockDeviceGateway {
     public void sendCommand(Command command) {
         try {
             // simulate latency
-            Thread.sleep(200 );
+            Thread.sleep(20 );
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -34,17 +34,19 @@ public class MockDeviceGateway {
         switch (command.getCommandType()) {
             case "WATERING":
                 dataSimulator.startWatering(command.getPlant().getId());
+                System.out.println("command started watering for: " + command.getPlant().getName());
                 break;
             case "HEATING":
                 dataSimulator.startHeating(command.getPlant().getId());
-                System.out.println("started for: " + command.getPlant().getName());
-
+                System.out.println("command started heating for: " + command.getPlant().getName());
                 break;
-//            case "CURTAINS_OPEN":
+//            case "LIGHT_CONTROL":
 //                dataSimulator.startLight(command.getPlant().getId());
+//            System.out.println("command started light control for: " + command.getPlant().getName());
 //                break;
             case "HUMIDIFYING":
                 dataSimulator.startHumidifying(command.getPlant().getId());
+                System.out.println("command started hum for: " + command.getPlant().getName());
                 break;
         }
     }

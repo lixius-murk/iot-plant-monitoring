@@ -158,18 +158,25 @@ public class DataSimulator {
     }
 
     public void startWatering(Long plantId) {
+        System.out.println("started watering for id: " + plantId);
+
         deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startWatering(20);
     }
 
     public void startHeating(Long plantId) {
+        System.out.println("started heating for id: " + plantId);
+
         deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startHeating(20);
     }
 
 //    public void startLight(Long plantId) {
+//            System.out.println("started light control for id: " + plantId);
 //        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startLight(10);
 //    }
 
     public void startHumidifying(Long plantId) {
+        System.out.println("started hum for id: " + plantId);
+
         deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startHum(20);
     }
     private int getEffectiveSoilMoistureMax(PlantInstance plant) {
