@@ -37,7 +37,7 @@ public class PlantService {
     }
 
     public List<PlantInstance> getAllActive() {
-        return plantRepository.findByIsActiveTrue();
+        return plantRepository.findByIsActiveTrueOrderByIdAsc();
     }
 
     public PlantInstance getPlantById(Long id) {
