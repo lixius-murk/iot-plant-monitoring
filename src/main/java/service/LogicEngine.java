@@ -38,6 +38,9 @@ public class LogicEngine {
     @Autowired
     private TelemetryService telemetryService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
 
     @Autowired
     private RecommendationMsgRepository recommendationMsgRepository;
