@@ -27,7 +27,7 @@ INSERT INTO plant_instances (id, name, id_species, height, pot_size, state, acti
                                                                                                                                                             (1, 'Монстера альцирана', 1, 45.0, 25, 0, true, NOW() - INTERVAL '2 days', NOW() - INTERVAL '1 hour', 18.0, 30),
                                                                                                                                                             (2, 'Инжир', 2, 60.0, 30, 0, true, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 hour', 16.0, 25),
                                                                                                                                                             (3, 'Змеиное растение', 3, 35.0, 15, 0, true, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 hour', 15.0, 15),
-                                                                                                                                                            (4, 'Лилия мира', 4, 25.0, 18, 1, true, NOW() - INTERVAL '5 days', NOW() - INTERVAL '1 hour', 18.0, 45);
+                                                                                                                                                            (4, 'Лилия мира', 4, 40.0, 18, 1, true, NOW() - INTERVAL '5 days', NOW() - INTERVAL '1 hour', 18.0, 45);
 INSERT INTO sensors (id, id_plant, type, label, active) VALUES
                                                             (1, 1, 'TEMPERATURE', 'Монстера альцирана - темп', true),
                                                             (2, 1, 'HUMIDITY_AIR', 'Монстера альцирана - влажн воздуха', true),
