@@ -116,8 +116,7 @@ public class DataSimulator {
             state.decWateringTimer();
         }
 
-        newMoisture = Math.max(0, Math.min(100, newMoisture));
-
+        newMoisture = Math.max(0, Math.min(max, newMoisture));
         state.setLastSoilMoisture(newMoisture);
         return newMoisture;
     }
@@ -164,7 +163,7 @@ public class DataSimulator {
     public void startWatering(Long plantId) {
         System.out.println("started watering for id: " + plantId);
 
-        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startWatering(20);
+        deviceStates.computeIfAbsent(plantId, k -> new DeviceState()).startWatering(2);
     }
 
     public void startHeating(Long plantId) {

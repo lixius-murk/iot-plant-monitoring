@@ -1,8 +1,11 @@
 package service;
 
+import model.entity.PlantInstance;
 import model.entity.Recommendation;
+import model.entity.RecommendationMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import repo.RecommendationMsgRepository;
 import repo.RecommendationRepository;
 
 import java.time.LocalDateTime;
@@ -12,7 +15,11 @@ import java.util.List;
 public class RecommendationService {
 
     @Autowired
+    private RecommendationMsgRepository recommendationMsgRepository;
+
+    @Autowired
     private RecommendationRepository recommendationRepository;
+
     @Autowired
     private WebSocketService webSocketService;
 
@@ -22,6 +29,11 @@ public class RecommendationService {
 
     public boolean existsUnresolved(Long plantId, Long msgId) {
         return recommendationRepository.existsByPlant_IdAndMessage_IdAndResolvedFalse(plantId, msgId);
+    }
+    public void createPotSizeIfAbsent(PlantInstance plant, String text) {
+        if (recommendationRepository.existsByPlant_IdAndResolvedFalse(plant.getId())) return;
+        RecommendationMsg msg = recommendationMsgRepository.save(new RecommendationMsg(text));
+        save(new Recommendation(plant, msg, "INFO"));
     }
     public boolean wasRecentlyResolved(Long plantId, Long msgId, int cooldownMinutes) {
         return recommendationRepository.existsRecentlyResolved(plantId, msgId, LocalDateTime.now().minusMinutes(cooldownMinutes));
@@ -58,7 +70,12 @@ public class RecommendationService {
         recommendation.setResolved(false);
         return recommendationRepository.save(recommendation);
     }
-
+    public void createIfAbsent(PlantInstance plant, Long msgId, String severity) {
+        if (recommendationRepository.existsByPlant_IdAndMessage_IdAndResolvedFalse(plant.getId(), msgId)) return;
+        RecommendationMsg msg = recommendationMsgRepository.findById(msgId).orElse(null);
+        if (msg == null) return;
+        save(new Recommendation(plant, msg, severity));
+    }
     public List<Recommendation> saveAll(List<Recommendation> recommendations) {
         for (Recommendation rec : recommendations) {
             rec.setCreatedAt(LocalDateTime.now());

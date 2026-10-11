@@ -16,9 +16,12 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
 
     boolean existsByPlant_IdAndMessage_IdAndResolvedFalse(Long plantId, Long messageId);
 
+
     @Query("SELECT r FROM Recommendation r WHERE r.resolved = false " +
-            "ORDER BY r.severity DESC, r.createdAt ASC")
+            "ORDER BY r.createdAt ASC")
     List<Recommendation> findByResolvedFalseOrderByCreatedAtAsc();
+
+    boolean existsByPlant_IdAndResolvedFalse(Long plantId);
 
 
     @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Recommendation r " +

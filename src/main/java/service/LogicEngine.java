@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import repo.RecommendationMsgRepository;
+import simulator.DataSimulator;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,6 +24,8 @@ public class LogicEngine {
     @Autowired
     private EventService eventService;
 
+    @Autowired
+    private DataSimulator dataSimulator;
     @Autowired
     private CommandService commandService;
 
@@ -125,6 +128,8 @@ public class LogicEngine {
                     && !eventService.hasOpenEvent(plant.getId(), "WATERING")) {
                 triggeredEvents.add(createEvent(plant, "WATERING",
                         "Низкая влажность почвы: " + plant.getName()));
+                recommendationService.createIfAbsent(plant, 3L, "WARNING");
+
                 plant.setState(1);
                 System.out.println("trigger for hum");
 
@@ -140,6 +145,8 @@ public class LogicEngine {
                     && !eventService.hasOpenEvent(plant.getId(), "HEATING")) {
                 triggeredEvents.add(createEvent(plant, "HEATING",
                         "Низкая температура: " + plant.getName()));
+                recommendationService.createIfAbsent(plant, 1L, "WARNING");
+
                 plant.setState(1);
 
                 System.out.println("trigger for temp");
@@ -159,6 +166,7 @@ public class LogicEngine {
                     && !eventService.hasOpenEvent(plant.getId(), "LIGHT_CONTROL")) {
                 triggeredEvents.add(createEvent(plant, "LIGHT_CONTROL",
                         "Недостаточно света: " + plant.getName()));
+                recommendationService.createIfAbsent(plant, 4L, "WARNING");
                 plant.setState(1);
 
                 System.out.println("trigger for light");
@@ -294,7 +302,10 @@ public class LogicEngine {
                     rec.setSeverity("INFO");
                     rec.setCreatedAt(LocalDateTime.now());
                     rec.setResolved(false);
-                    recommendationService.save(rec);
+                    recommendationService.createPotSizeIfAbsent(plant, String.format("Растение достигло высоты %.1f см при размере горшка %d см. " +
+                                    "Рекомендуется пересадка в горшок %d см.",
+                            currentHeight, plant.getPotSize(), plant.getSpecies().getRecommendedPotSize().intValue()));
+
                     webSocketService.sendRecommendation(plant, rec);
                 }
             }

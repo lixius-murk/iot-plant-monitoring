@@ -238,6 +238,8 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script>
     let currentPlantId = null;
     let stompClient = null;
@@ -340,11 +342,11 @@
                             </thead>
                             <tbody>
                                 ${plants.map(p => `
-                                    <tr class="plant-row" onclick="loadPlantDetails(${p.id})">
+                                    <tr class="plant-row" onclick="loadPlantDetails(${p.id}, true)">
                                         <td>${p.id}</td>
                                         <td>${p.name}</td>
                                         <td><span class="badge ${p.state === 0 ? 'healthy' : 'attention'}">${p.state === 0 ? 'Норма' : 'Внимание'}</span></td>
-                                        <td><button class="secondary" onclick="event.stopPropagation();waterPlant(${p.id})">"Полить"</button></td>
+                                        <td><button class="secondary" onclick="event.stopPropagation();waterPlant(${p.id})">Полить</button></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -357,7 +359,7 @@
         }
     }
 
-    async function loadPlantDetails(id) {
+    async function loadPlantDetails(id, scroll = false) {
         currentPlantId = id;
         subscribeToTelemetry(id);
         try {
@@ -368,7 +370,7 @@
             ]);
 
             const plant = await plantRes.json();
-            const telemetry = await telemetryRes.json();
+            const telemetry = telemetryRes.ok ? await telemetryRes.json() : null;
             const recommendations = await recsRes.json();
 
             const detailDiv = document.getElementById('plantDetail');
@@ -381,7 +383,7 @@
             if (recommendations && recommendations.length) {
                 recHtml = `<h4>Рекомендации: </h4><ul>`;
                 recommendations.forEach(r => {
-                    recHtml += `<li>${r.message? r.message.msg : ''} <small>(${r.severity})</small></li>`;
+                    recHtml += `<li>${r.message?.msg ?? ''} <small>(${r.severity})</small></li>`;
                 });
                 recHtml += `</ul>`;
             }
@@ -390,23 +392,24 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <h4>Последние показания</h4>
-                            <p><strong>Температура: </strong> ${telemetry?.temp || '—'} C</p>
-                            <p><strong>Влажность воздуха: </strong> ${telemetry?.humidity || '—'} %</p>
-                            <p><strong>Влажность почвы: </strong> ${telemetry?.soilMoisture || '—'} %</p>
-                            <p><strong>Освещенность: </strong> ${telemetry?.light || '—'} lux</p>
+                            <p><strong>Температура: </strong> ${telemetry?.temp ?? '—'} C</p>
+                            <p><strong>Влажность воздуха: </strong> ${telemetry?.humidity ?? '—'} %</p>
+                            <p><strong>Влажность почвы: </strong> ${telemetry?.soilMoisture ?? '—'} %</p>
+                            <p><strong>Освещенность: </strong> ${telemetry?.light ?? '—'} lux</p>
                             <p><strong>Время: </strong> ${telemetry?.time ? new Date(telemetry.time).toLocaleString() : '—'}</p>
                         </div>
                         <div>
                             <h4>Настройки</h4>
-                                <p><strong>Мин. температура: </strong> ${plant.tempMin ?? plant.species?.tempMin ?? '—'} °C</p>
-                                <p><strong>Мин. влажность почвы: </strong> ${plant.soilMoistureMin ?? plant.species?.soilMoistureMin ?? '—'} %</p>
-                                <p><strong>Мин. освещенность: </strong> ${plant.lightMin ?? plant.species?.lightMin ?? '—'} lux</p>                       </div>
-                         </div>
+                            <p><strong>Мин. температура: </strong> ${plant.tempMin ?? plant.species?.tempMin ?? '—'} °C</p>
+                            <p><strong>Мин. влажность почвы: </strong> ${plant.soilMoistureMin ?? plant.species?.soilMoistureMin ?? '—'} %</p>
+                            <p><strong>Мин. освещенность: </strong> ${plant.lightMin ?? plant.species?.lightMin ?? '—'} lux</p>
+                        </div>
+                    </div>
                     ${recHtml}
                 `;
 
             detailDiv.style.display = 'block';
-            detailDiv.scrollIntoView({ behavior: 'smooth' });
+            if (scroll) detailDiv.scrollIntoView({ behavior: 'smooth' });
 
         } catch (error) {
             console.error('Ошибка загрузки деталей:', error);
@@ -450,8 +453,8 @@
                 }
 
                 recsDiv.innerHTML = data.recommendations.map(r => `
-                        <div class="rec-item ${r.severity === 'INFO' ? 'инфо' : (r.severity === 'CRITICAL' ? 'критично' : '')}">
-                            <div class="rec-message">${r.message ? r.message.msg : ''}</div>
+                        <div class="rec-item ${r.severity === 'INFO' ? 'info' : (r.severity === 'CRITICAL' ? 'critical' : '')}">
+                            <div class="rec-message">${r.message?.msg ?? ''}</div>
                             <div>
                                 <span class="rec-resolve" onclick="resolveRecommendation(${r.id})">Отметить как решенное</span>
                             </div>
@@ -508,7 +511,5 @@
     initWebSocket();
 
 </script>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </body>
 </html>

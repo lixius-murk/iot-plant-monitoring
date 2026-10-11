@@ -18,6 +18,8 @@ public class MockDeviceGateway {
     private CommandService commandService;
     @Autowired
     private DataSimulator dataSimulator;
+    @Autowired(required = false)
+    private EventService eventService;
 
     @Async
     public void sendCommand(Command command) {
@@ -49,6 +51,9 @@ public class MockDeviceGateway {
                 break;
         }
         commandService.acknowledge(command.getIdCommand());
+        if (command.getEvent() != null) {
+            eventService.markResolved(command.getEvent().getId());
+        }
 
     }
 }

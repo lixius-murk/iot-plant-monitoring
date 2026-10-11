@@ -42,17 +42,26 @@ public class DataCollection {
         public void collectData() {
             List<PlantInstance> activePlants = plantService.getAllActive();
 
-            for (PlantInstance plant : activePlants) {
-                List<Sensor> sensors = sensorService.getSensorsByPlant(plant.getIdPlant());
+        for (PlantInstance plant : activePlants) {
+            List<Sensor> sensors = sensorService.getSensorsByPlant(plant.getIdPlant());
+            if (sensors.isEmpty()) continue;
 
-                for (Sensor sensor : sensors) {
-                    Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensor);
+            Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensors.get(0));
 
-                    telemetryService.save(telemetry);
-                    webSocketService.sendTelemetry(telemetry);
-
-                    logicEngine.check(telemetry, plant, webSocketService);
-                }
-            }
+            telemetryService.save(telemetry);
+            logicEngine.check(telemetry, plant, webSocketService);
+        }
+//            for (PlantInstance plant : activePlants) {
+//                List<Sensor> sensors = sensorService.getSensorsByPlant(plant.getIdPlant());
+//
+//                for (Sensor sensor : sensors) {
+//                    Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensor);
+//
+//                    telemetryService.save(telemetry);
+//                    webSocketService.sendTelemetry(telemetry);
+//
+//                    logicEngine.check(telemetry, plant, webSocketService);
+//                }
+//            }
         }
     }
