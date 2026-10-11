@@ -1,6 +1,5 @@
 package service;
 
-import groovy.util.logging.Log;
 import model.entity.Command;
 import model.entity.Event;
 import model.entity.PlantInstance;

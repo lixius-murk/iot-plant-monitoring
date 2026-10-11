@@ -12,6 +12,7 @@ import service.*;
 import simulator.DataSimulator;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @ConditionalOnProperty(name = "app.simulation.enabled", havingValue = "true", matchIfMissing = true)
@@ -36,11 +37,9 @@ public class DataCollection {
         @Autowired(required = false)
         private WebSocketService webSocketService;
 
-    @Value("${app.simulation.interval-seconds}")
-
-    @Scheduled(fixedDelayString = "${app.simulation.interval-seconds}")
-        public void collectData() {
-            List<PlantInstance> activePlants = plantService.getAllActive();
+    @Scheduled(fixedDelayString = "${app.simulation.interval-seconds}", timeUnit = TimeUnit.SECONDS)
+    public void collectData() {
+        List<PlantInstance> activePlants = plantService.getAllActive();
 
         for (PlantInstance plant : activePlants) {
             List<Sensor> sensors = sensorService.getSensorsByPlant(plant.getIdPlant());
@@ -49,19 +48,8 @@ public class DataCollection {
             Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensors.get(0));
 
             telemetryService.save(telemetry);
+            webSocketService.sendTelemetry(telemetry);
             logicEngine.check(telemetry, plant, webSocketService);
         }
-//            for (PlantInstance plant : activePlants) {
-//                List<Sensor> sensors = sensorService.getSensorsByPlant(plant.getIdPlant());
-//
-//                for (Sensor sensor : sensors) {
-//                    Telemetry telemetry = dataSimulator.generateTelemetry(plant, sensor);
-//
-//                    telemetryService.save(telemetry);
-//                    webSocketService.sendTelemetry(telemetry);
-//
-//                    logicEngine.check(telemetry, plant, webSocketService);
-//                }
-//            }
-        }
+    }
     }

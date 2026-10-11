@@ -23,7 +23,7 @@
         }
 
         h1 {
-            color: #2d4a2d;
+            color: #ededed;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -274,6 +274,7 @@
             const eventsSub = stompClient.subscribe(`/topic/plants/${id}/events`, () => {
                 loadEvents();
                 loadStats();
+                loadPlants();
             });
             const recsSub = stompClient.subscribe(`/topic/plants/${id}/recommendations`, () => {
                 loadRecommendations();
@@ -359,6 +360,13 @@
         }
     }
 
+    function badge(value, min) {
+        if (value == null || min == null) return '';
+        return value < min
+            ? ' <span class="badge danger">Ниже нормы</span>'
+            : ' <span class="badge healthy">Норма</span>';
+    }
+
     async function loadPlantDetails(id, scroll = false) {
         currentPlantId = id;
         subscribeToTelemetry(id);
@@ -387,16 +395,19 @@
                 });
                 recHtml += `</ul>`;
             }
+            const tempMin = plant.tempMin ?? plant.species?.tempMin;
+            const soilMin = plant.soilMoistureMin ?? plant.species?.soilMoistureMin;
+            const humMin = plant.airHumMin ?? plant.species?.airHumMin;
+            const lightMin = plant.lightMin ?? plant.species?.lightMin;
 
             detailContent.innerHTML = `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <h4>Последние показания</h4>
-                            <p><strong>Температура: </strong> ${telemetry?.temp ?? '—'} C</p>
-                            <p><strong>Влажность воздуха: </strong> ${telemetry?.humidity ?? '—'} %</p>
-                            <p><strong>Влажность почвы: </strong> ${telemetry?.soilMoisture ?? '—'} %</p>
-                            <p><strong>Освещенность: </strong> ${telemetry?.light ?? '—'} lux</p>
-                            <p><strong>Время: </strong> ${telemetry?.time ? new Date(telemetry.time).toLocaleString() : '—'}</p>
+                            <p><strong>Температура: </strong> ${telemetry?.temp ?? '—'} C${badge(telemetry?.temp, tempMin)}</p>
+                            <p><strong>Влажность воздуха: </strong> ${telemetry?.humidity ?? '—'} %${badge(telemetry?.humidity, humMin)}</p>
+                            <p><strong>Влажность почвы: </strong> ${telemetry?.soilMoisture ?? '—'} %${badge(telemetry?.soilMoisture, soilMin)}</p>
+                            <p><strong>Освещенность: </strong> ${telemetry?.light ?? '—'} lux${badge(telemetry?.light, lightMin)}</p><p><strong>Время: </strong> ${telemetry?.time ? new Date(telemetry.time).toLocaleString() : '—'}</p>
                         </div>
                         <div>
                             <h4>Настройки</h4>

@@ -23,15 +23,12 @@ public class MockDeviceGateway {
 
     @Async
     public void sendCommand(Command command) {
-//        try {
-//            // simulate latency
-//            Thread.sleep(20 );
-//
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            return;
-//        }
-
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
         switch (command.getCommandType()) {
             case "WATERING":
                 dataSimulator.startWatering(command.getPlant().getId());
